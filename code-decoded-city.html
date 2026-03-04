@@ -597,6 +597,195 @@
       text-anchor: middle;
     }
 
+    /* ───────────────────── Road Layer SVG ───────────────────── */
+    #road-layer {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #road-layer svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Highway dashed center line animation */
+    @keyframes road-dash-scroll {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: -48; }
+    }
+
+    .road-center-line {
+      stroke: #FBBF24;
+      stroke-width: 3;
+      stroke-dasharray: 18 12;
+      fill: none;
+      animation: road-dash-scroll 1.5s linear infinite;
+    }
+
+    .road-edge-line {
+      stroke: #E5E7EB;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Car animation */
+    @keyframes car-drive {
+      from { transform: translateX(-80px); }
+      to { transform: translateX(1300px); }
+    }
+
+    .road-car {
+      animation: car-drive 5s linear infinite;
+    }
+
+    .road-car.car-fast { animation-duration: 3s; }
+    .road-car.car-medium { animation-duration: 4.5s; }
+    .road-car.car-slow { animation-duration: 6s; }
+
+    /* Cache OFF: cars slow down */
+    .road-slow .road-car { animation-duration: 12s !important; }
+    .road-slow .road-car.car-fast { animation-duration: 10s !important; }
+    .road-slow .road-car.car-medium { animation-duration: 11s !important; }
+    .road-slow .road-car.car-slow { animation-duration: 14s !important; }
+
+    /* Extra cars (hidden by default, shown when cache is OFF) */
+    .road-extra-car {
+      opacity: 0;
+      animation: car-drive 8s linear infinite;
+      transition: opacity 0.5s ease;
+    }
+
+    .road-slow .road-extra-car {
+      opacity: 1;
+    }
+
+    /* SLOW warning sign */
+    .road-slow-sign {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .road-slow .road-slow-sign {
+      opacity: 1;
+    }
+
+    /* Toll booth barrier arm */
+    .toll-barrier-arm {
+      transition: transform 0.5s ease;
+      transform-origin: 250px 68px;
+    }
+
+    /* Auth OFF: barrier rotates up */
+    .road-auth-off .toll-barrier-arm {
+      transform: rotate(-80deg);
+    }
+
+    /* Intruder sliding through open toll booth */
+    @keyframes intruder-slide {
+      0% { transform: translateX(-30px); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateX(100px); opacity: 0; }
+    }
+
+    .road-intruder {
+      opacity: 0;
+    }
+
+    .road-auth-off .road-intruder {
+      animation: intruder-slide 3s ease-in-out infinite;
+    }
+
+    /* Red flash on downstream element when auth is off */
+    @keyframes red-flash {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.6; }
+    }
+
+    .road-auth-flash {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .road-auth-off .road-auth-flash {
+      animation: red-flash 1.5s ease-in-out infinite;
+    }
+
+    /* Traffic light green glow pulse */
+    @keyframes green-pulse {
+      0%, 100% { opacity: 0.7; r: 8; }
+      50% { opacity: 1; r: 10; }
+    }
+
+    .tl-green-glow {
+      animation: green-pulse 2s ease-in-out infinite;
+      fill: #22C55E;
+    }
+
+    /* Rate limiter OFF: traffic light all red */
+    .road-rate-off .tl-green-glow {
+      animation: none;
+      fill: #EF4444;
+    }
+
+    .road-rate-off .tl-yellow-circle {
+      fill: #EF4444;
+    }
+
+    /* BROKEN label on traffic light */
+    .road-tl-broken {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .road-rate-off .road-tl-broken {
+      opacity: 1;
+    }
+
+    /* Flood dots animation through intersection */
+    @keyframes flood-dot {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(200px); opacity: 0; }
+    }
+
+    .road-flood-dot {
+      opacity: 0;
+    }
+
+    .road-rate-off .road-flood-dot {
+      animation: flood-dot 1.2s linear infinite;
+    }
+
+    .road-rate-off .road-flood-dot:nth-child(2) { animation-delay: 0.15s; }
+    .road-rate-off .road-flood-dot:nth-child(3) { animation-delay: 0.3s; }
+    .road-rate-off .road-flood-dot:nth-child(4) { animation-delay: 0.45s; }
+    .road-rate-off .road-flood-dot:nth-child(5) { animation-delay: 0.6s; }
+    .road-rate-off .road-flood-dot:nth-child(6) { animation-delay: 0.75s; }
+    .road-rate-off .road-flood-dot:nth-child(7) { animation-delay: 0.9s; }
+    .road-rate-off .road-flood-dot:nth-child(8) { animation-delay: 1.05s; }
+
+    /* Road labels */
+    .road-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      fill: #D1D5DB;
+      text-anchor: middle;
+    }
+
+    /* One-way arrow markings animation */
+    @keyframes arrow-scroll {
+      from { stroke-dashoffset: 0; }
+      to { stroke-dashoffset: -30; }
+    }
+
+    .one-way-arrows {
+      stroke: #E5E7EB;
+      stroke-width: 2;
+      stroke-dasharray: 10 20;
+      fill: none;
+      animation: arrow-scroll 1s linear infinite;
+    }
+
     /* ───────────────────── Tooltip ───────────────────── */
     #tooltip {
       display: none;
@@ -1385,6 +1574,429 @@
       container.appendChild(svg);
     }
 
+    /* ───────────────────── Build Road Layer ───────────────────── */
+    function buildRoadLayer() {
+      var container = document.getElementById('road-layer');
+      var svg = svgEl('svg', {
+        viewBox: '0 0 1200 200',
+        width: '100%',
+        height: '100%',
+        preserveAspectRatio: 'xMidYMid meet',
+        xmlns: SVG_NS
+      });
+
+      // Main group for failure-class toggling
+      var mainGroup = svgEl('g', { id: 'road-main-group' });
+
+      // ─── Highway (full width, centered vertically) ───
+      var highway = svgEl('g', {
+        id: 'road-highway',
+        'data-name': 'Network / CDN',
+        'data-analogy': 'Highway system \u2014 the main arteries carrying traffic across the city',
+        'data-technical': 'Network infrastructure, CDN edge nodes distributing content globally',
+        cursor: 'pointer'
+      });
+
+      // Road surface
+      highway.appendChild(svgEl('rect', {
+        x: '0', y: '70', width: '1200', height: '60', fill: '#6B7280'
+      }));
+
+      // White edge lines
+      highway.appendChild(svgEl('line', {
+        x1: '0', y1: '72', x2: '1200', y2: '72',
+        class: 'road-edge-line'
+      }));
+      highway.appendChild(svgEl('line', {
+        x1: '0', y1: '128', x2: '1200', y2: '128',
+        class: 'road-edge-line'
+      }));
+
+      // Dashed yellow center line (animated)
+      highway.appendChild(svgEl('line', {
+        x1: '0', y1: '100', x2: '1200', y2: '100',
+        class: 'road-center-line'
+      }));
+
+      mainGroup.appendChild(highway);
+
+      // Highway label
+      mainGroup.appendChild(svgEl('text', {
+        x: '60', y: '155', class: 'road-label'
+      }, [document.createTextNode('Network / CDN')]));
+
+      // ─── Toll Booth (~x=250) ───
+      var tollBooth = svgEl('g', {
+        id: 'road-toll-booth',
+        'data-name': 'Authentication',
+        'data-analogy': 'Toll booth \u2014 show your pass before entering the highway',
+        'data-technical': 'Verifying identity: OAuth, JWT tokens, API keys. Who are you?',
+        cursor: 'pointer'
+      });
+
+      // Booth structure (above road)
+      tollBooth.appendChild(svgEl('rect', {
+        x: '230', y: '30', width: '40', height: '42', rx: '3', ry: '3',
+        fill: '#374151', stroke: '#6B7280', 'stroke-width': '1.5'
+      }));
+
+      // Booth roof
+      tollBooth.appendChild(svgEl('rect', {
+        x: '225', y: '25', width: '50', height: '8', rx: '2', ry: '2',
+        fill: '#4B5563'
+      }));
+
+      // Booth window
+      tollBooth.appendChild(svgEl('rect', {
+        x: '238', y: '37', width: '24', height: '14', rx: '2', ry: '2',
+        fill: '#60A5FA', opacity: '0.6'
+      }));
+
+      // Booth base / stand
+      tollBooth.appendChild(svgEl('rect', {
+        x: '245', y: '58', width: '10', height: '12', fill: '#374151'
+      }));
+
+      // Barrier arm (horizontal bar that can rotate up)
+      var barrierArm = svgEl('g', { class: 'toll-barrier-arm' });
+      barrierArm.appendChild(svgEl('rect', {
+        x: '250', y: '66', width: '80', height: '5', rx: '2', ry: '2',
+        fill: '#FBBF24'
+      }));
+      // Red/white stripes on barrier
+      barrierArm.appendChild(svgEl('rect', {
+        x: '270', y: '66', width: '10', height: '5', fill: '#EF4444'
+      }));
+      barrierArm.appendChild(svgEl('rect', {
+        x: '290', y: '66', width: '10', height: '5', fill: '#EF4444'
+      }));
+      barrierArm.appendChild(svgEl('rect', {
+        x: '310', y: '66', width: '10', height: '5', fill: '#EF4444'
+      }));
+      // Pivot point
+      barrierArm.appendChild(svgEl('circle', {
+        cx: '250', cy: '68', r: '4', fill: '#F59E0B', stroke: '#374151', 'stroke-width': '1'
+      }));
+      tollBooth.appendChild(barrierArm);
+
+      // Intruder (hidden by default, slides through when auth is OFF)
+      var intruder = svgEl('g', { class: 'road-intruder' });
+      // Simple alien/intruder shape: circle with X eyes
+      intruder.appendChild(svgEl('circle', {
+        cx: '260', cy: '95', r: '10', fill: '#EF4444', opacity: '0.9'
+      }));
+      // X eyes
+      intruder.appendChild(svgEl('line', {
+        x1: '254', y1: '91', x2: '258', y2: '95',
+        stroke: '#ffffff', 'stroke-width': '2', 'stroke-linecap': 'round'
+      }));
+      intruder.appendChild(svgEl('line', {
+        x1: '258', y1: '91', x2: '254', y2: '95',
+        stroke: '#ffffff', 'stroke-width': '2', 'stroke-linecap': 'round'
+      }));
+      intruder.appendChild(svgEl('line', {
+        x1: '262', y1: '91', x2: '266', y2: '95',
+        stroke: '#ffffff', 'stroke-width': '2', 'stroke-linecap': 'round'
+      }));
+      intruder.appendChild(svgEl('line', {
+        x1: '266', y1: '91', x2: '262', y2: '95',
+        stroke: '#ffffff', 'stroke-width': '2', 'stroke-linecap': 'round'
+      }));
+      tollBooth.appendChild(intruder);
+
+      // Red flash on intersection (downstream) when auth is off
+      var authFlash = svgEl('rect', {
+        x: '520', y: '40', width: '60', height: '120', rx: '4', ry: '4',
+        fill: '#EF4444', opacity: '0.4', class: 'road-auth-flash'
+      });
+      tollBooth.appendChild(authFlash);
+
+      mainGroup.appendChild(tollBooth);
+
+      // Toll booth label
+      mainGroup.appendChild(svgEl('text', {
+        x: '250', y: '155', class: 'road-label'
+      }, [document.createTextNode('Auth')]));
+
+      // ─── Intersection (~x=550) ───
+      var intersection = svgEl('g', {
+        id: 'road-intersection',
+        'data-name': 'Router',
+        'data-analogy': 'Intersection where traffic gets directed to different destinations',
+        'data-technical': 'Routes requests to the correct service or handler based on URL path',
+        cursor: 'pointer'
+      });
+
+      // Vertical road crossing
+      intersection.appendChild(svgEl('rect', {
+        x: '530', y: '0', width: '40', height: '200', fill: '#6B7280'
+      }));
+
+      // Vertical road edge lines
+      intersection.appendChild(svgEl('line', {
+        x1: '532', y1: '0', x2: '532', y2: '70',
+        class: 'road-edge-line'
+      }));
+      intersection.appendChild(svgEl('line', {
+        x1: '568', y1: '0', x2: '568', y2: '70',
+        class: 'road-edge-line'
+      }));
+      intersection.appendChild(svgEl('line', {
+        x1: '532', y1: '130', x2: '532', y2: '200',
+        class: 'road-edge-line'
+      }));
+      intersection.appendChild(svgEl('line', {
+        x1: '568', y1: '130', x2: '568', y2: '200',
+        class: 'road-edge-line'
+      }));
+
+      // Vertical dashed center line (top part)
+      intersection.appendChild(svgEl('line', {
+        x1: '550', y1: '0', x2: '550', y2: '70',
+        stroke: '#FBBF24', 'stroke-width': '2', 'stroke-dasharray': '12 8'
+      }));
+      // Vertical dashed center line (bottom part)
+      intersection.appendChild(svgEl('line', {
+        x1: '550', y1: '130', x2: '550', y2: '200',
+        stroke: '#FBBF24', 'stroke-width': '2', 'stroke-dasharray': '12 8'
+      }));
+
+      // Intersection square area (slightly lighter)
+      intersection.appendChild(svgEl('rect', {
+        x: '530', y: '70', width: '40', height: '60',
+        fill: '#78818c', opacity: '0.5'
+      }));
+
+      // Flood dots (hidden by default, shown when rate limiter OFF)
+      var floodGroup = svgEl('g', {});
+      var floodColors = ['#EF4444', '#F59E0B', '#3B82F6', '#EF4444', '#22C55E', '#F59E0B', '#3B82F6', '#EF4444'];
+      for (var fi = 0; fi < 8; fi++) {
+        floodGroup.appendChild(svgEl('circle', {
+          cx: String(540 + (fi % 3) * 8), cy: String(88 + Math.floor(fi / 3) * 10),
+          r: '3', fill: floodColors[fi], class: 'road-flood-dot'
+        }));
+      }
+      intersection.appendChild(floodGroup);
+
+      mainGroup.appendChild(intersection);
+
+      // Intersection label
+      mainGroup.appendChild(svgEl('text', {
+        x: '550', y: '195', class: 'road-label'
+      }, [document.createTextNode('Router')]));
+
+      // ─── Traffic Light (~x=550, above intersection) ───
+      var trafficLight = svgEl('g', {
+        id: 'road-traffic-light',
+        'data-name': 'Rate Limiter',
+        'data-analogy': 'Traffic light controlling flow \u2014 only so many cars can pass per cycle',
+        'data-technical': 'Limits requests per time window. 429 Too Many Requests. Token bucket algorithm',
+        cursor: 'pointer'
+      });
+
+      // Post
+      trafficLight.appendChild(svgEl('rect', {
+        x: '573', y: '20', width: '4', height: '50', fill: '#374151'
+      }));
+
+      // Traffic light body
+      trafficLight.appendChild(svgEl('rect', {
+        x: '565', y: '2', width: '20', height: '50', rx: '4', ry: '4',
+        fill: '#374151', stroke: '#4B5563', 'stroke-width': '1'
+      }));
+
+      // Red circle
+      trafficLight.appendChild(svgEl('circle', {
+        cx: '575', cy: '13', r: '6', fill: '#EF4444', opacity: '0.4', class: 'tl-red-circle'
+      }));
+
+      // Yellow circle
+      trafficLight.appendChild(svgEl('circle', {
+        cx: '575', cy: '27', r: '6', fill: '#FBBF24', opacity: '0.4', class: 'tl-yellow-circle'
+      }));
+
+      // Green circle (pulsing glow by default)
+      trafficLight.appendChild(svgEl('circle', {
+        cx: '575', cy: '41', r: '8', fill: '#22C55E', opacity: '0.3', class: 'tl-green-glow'
+      }));
+      trafficLight.appendChild(svgEl('circle', {
+        cx: '575', cy: '41', r: '6', fill: '#22C55E', class: 'tl-green-glow'
+      }));
+
+      // BROKEN label (hidden by default)
+      trafficLight.appendChild(svgEl('text', {
+        x: '575', y: '65', 'text-anchor': 'middle',
+        'font-family': 'JetBrains Mono, monospace', 'font-size': '9', 'font-weight': '700',
+        fill: '#EF4444', class: 'road-tl-broken'
+      }, [document.createTextNode('BROKEN')]));
+
+      mainGroup.appendChild(trafficLight);
+
+      // Traffic light label
+      mainGroup.appendChild(svgEl('text', {
+        x: '575', y: '155', class: 'road-label'
+      }, [document.createTextNode('Rate Limiter')]));
+
+      // ─── One-way Street (~x=900) ───
+      var oneWay = svgEl('g', {
+        id: 'road-one-way',
+        'data-name': 'Message Queue',
+        'data-analogy': 'One-way street \u2014 traffic flows in only one direction',
+        'data-technical': 'Async message queues (Kafka, RabbitMQ). Producers send, consumers receive. Decoupled',
+        cursor: 'pointer'
+      });
+
+      // Narrower road branching off
+      oneWay.appendChild(svgEl('rect', {
+        x: '860', y: '80', width: '180', height: '30', rx: '2', ry: '2',
+        fill: '#5a6370'
+      }));
+
+      // Edge lines
+      oneWay.appendChild(svgEl('line', {
+        x1: '860', y1: '81', x2: '1040', y2: '81',
+        class: 'road-edge-line'
+      }));
+      oneWay.appendChild(svgEl('line', {
+        x1: '860', y1: '109', x2: '1040', y2: '109',
+        class: 'road-edge-line'
+      }));
+
+      // Animated arrow markings pointing right
+      oneWay.appendChild(svgEl('line', {
+        x1: '870', y1: '95', x2: '1030', y2: '95',
+        class: 'one-way-arrows'
+      }));
+
+      // Arrow chevrons pointing right
+      var arrowXPositions = [880, 920, 960, 1000];
+      arrowXPositions.forEach(function(ax) {
+        oneWay.appendChild(svgEl('polygon', {
+          points: String(ax) + ',88 ' + String(ax + 10) + ',95 ' + String(ax) + ',102',
+          fill: '#E5E7EB', opacity: '0.5'
+        }));
+      });
+
+      mainGroup.appendChild(oneWay);
+
+      // One-way label
+      mainGroup.appendChild(svgEl('text', {
+        x: '950', y: '155', class: 'road-label'
+      }, [document.createTextNode('Message Queue')]));
+
+      // ─── Cars (4-5 small colored rectangles with wheels) ───
+      var carConfigs = [
+        { color: '#EF4444', y: 78, speedClass: 'car-fast', delay: '0s' },
+        { color: '#3B82F6', y: 92, speedClass: 'car-medium', delay: '1.2s' },
+        { color: '#22C55E', y: 108, speedClass: 'car-slow', delay: '0.6s' },
+        { color: '#F59E0B', y: 115, speedClass: 'car-fast', delay: '2s' },
+        { color: '#A855F7', y: 85, speedClass: 'car-medium', delay: '3.5s' }
+      ];
+
+      carConfigs.forEach(function(cfg, idx) {
+        var car = svgEl('g', {
+          class: 'road-car ' + cfg.speedClass,
+          style: 'animation-delay: ' + cfg.delay
+        });
+
+        // Car body
+        car.appendChild(svgEl('rect', {
+          x: '0', y: '0', width: '24', height: '12', rx: '3', ry: '3',
+          fill: cfg.color
+        }));
+
+        // Car roof
+        car.appendChild(svgEl('rect', {
+          x: '5', y: '-4', width: '14', height: '6', rx: '2', ry: '2',
+          fill: cfg.color, opacity: '0.8'
+        }));
+
+        // Windshield
+        car.appendChild(svgEl('rect', {
+          x: '14', y: '-3', width: '5', height: '4', rx: '1', ry: '1',
+          fill: '#87CEEB', opacity: '0.6'
+        }));
+
+        // Wheels
+        car.appendChild(svgEl('circle', {
+          cx: '6', cy: '13', r: '3', fill: '#1F2937'
+        }));
+        car.appendChild(svgEl('circle', {
+          cx: '18', cy: '13', r: '3', fill: '#1F2937'
+        }));
+
+        // Wheel hubs
+        car.appendChild(svgEl('circle', {
+          cx: '6', cy: '13', r: '1.5', fill: '#6B7280'
+        }));
+        car.appendChild(svgEl('circle', {
+          cx: '18', cy: '13', r: '1.5', fill: '#6B7280'
+        }));
+
+        // Wrap in a positioned group
+        var carWrapper = svgEl('g', {
+          transform: 'translate(0, ' + cfg.y + ')'
+        });
+        carWrapper.appendChild(car);
+        mainGroup.appendChild(carWrapper);
+      });
+
+      // ─── Extra cars (hidden by default, appear when cache is OFF) ───
+      var extraCarConfigs = [
+        { color: '#DC2626', y: 83, delay: '0.3s' },
+        { color: '#2563EB', y: 100, delay: '0.8s' },
+        { color: '#D97706', y: 118, delay: '1.5s' }
+      ];
+
+      extraCarConfigs.forEach(function(cfg) {
+        var car = svgEl('g', {
+          class: 'road-extra-car',
+          style: 'animation-delay: ' + cfg.delay
+        });
+
+        car.appendChild(svgEl('rect', {
+          x: '0', y: '0', width: '24', height: '12', rx: '3', ry: '3',
+          fill: cfg.color
+        }));
+        car.appendChild(svgEl('rect', {
+          x: '5', y: '-4', width: '14', height: '6', rx: '2', ry: '2',
+          fill: cfg.color, opacity: '0.8'
+        }));
+        car.appendChild(svgEl('circle', {
+          cx: '6', cy: '13', r: '3', fill: '#1F2937'
+        }));
+        car.appendChild(svgEl('circle', {
+          cx: '18', cy: '13', r: '3', fill: '#1F2937'
+        }));
+
+        var carWrapper = svgEl('g', {
+          transform: 'translate(0, ' + cfg.y + ')'
+        });
+        carWrapper.appendChild(car);
+        mainGroup.appendChild(carWrapper);
+      });
+
+      // ─── SLOW warning sign (hidden by default, shown when cache OFF) ───
+      var slowSign = svgEl('g', { class: 'road-slow-sign' });
+      slowSign.appendChild(svgEl('rect', {
+        x: '700', y: '55', width: '60', height: '20', rx: '3', ry: '3',
+        fill: '#F59E0B', stroke: '#D97706', 'stroke-width': '1.5'
+      }));
+      slowSign.appendChild(svgEl('text', {
+        x: '730', y: '69', 'text-anchor': 'middle',
+        'font-family': 'JetBrains Mono, monospace', 'font-size': '11', 'font-weight': '700',
+        fill: '#1F2937'
+      }, [document.createTextNode('SLOW')]));
+      // Sign post
+      slowSign.appendChild(svgEl('rect', {
+        x: '728', y: '68', width: '4', height: '10', fill: '#6B7280'
+      }));
+      mainGroup.appendChild(slowSign);
+
+      svg.appendChild(mainGroup);
+      container.appendChild(svg);
+    }
+
     /* ───────────────────── Render City (visual state) ───────────────────── */
     function renderCity() {
       var t = state.toggles;
@@ -1438,10 +2050,35 @@
           if (cbStatusDot) cbStatusDot.setAttribute('fill', '#22C55E');
         }
       }
+
+      // --- Auth toggle affects road layer (toll booth) ---
+      var roadMainGroup = document.getElementById('road-main-group');
+      if (roadMainGroup) {
+        if (!t.auth) {
+          roadMainGroup.classList.add('road-auth-off');
+        } else {
+          roadMainGroup.classList.remove('road-auth-off');
+        }
+
+        // --- Cache toggle affects road layer (car speed + congestion) ---
+        if (!t.cache) {
+          roadMainGroup.classList.add('road-slow');
+        } else {
+          roadMainGroup.classList.remove('road-slow');
+        }
+
+        // --- Rate limiter toggle affects road layer (traffic light) ---
+        if (!t.rateLimiter) {
+          roadMainGroup.classList.add('road-rate-off');
+        } else {
+          roadMainGroup.classList.remove('road-rate-off');
+        }
+      }
     }
 
     /* ───────────────────── Init ───────────────────── */
     buildControlPanel();
+    buildRoadLayer();
     buildElectricityLayer();
     setupTooltips();
     renderCity();
