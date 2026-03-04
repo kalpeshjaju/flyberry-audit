@@ -392,6 +392,143 @@
       background: var(--water-blue);
       color: #ffffff;
     }
+
+    /* ───────────────────── Water Layer SVG ───────────────────── */
+    #water-layer {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #water-layer svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Water flow animation */
+    @keyframes water-flow {
+      from { stroke-dashoffset: 48; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    .water-pipe {
+      stroke: var(--water-blue);
+      stroke-width: 12;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    .water-flow-overlay {
+      stroke: #60A5FA;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 12 12;
+      fill: none;
+      animation: water-flow 3s linear infinite;
+    }
+
+    /* Murky flow when validation is off */
+    .water-flow-overlay.murky {
+      stroke: var(--toxic-green);
+    }
+
+    .water-pipe.murky {
+      stroke: var(--toxic-green);
+    }
+
+    /* Filter mesh lines */
+    .filter-mesh {
+      stroke: #93C5FD;
+      stroke-width: 1.5;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .filter-mesh.hidden {
+      opacity: 0;
+    }
+
+    /* SQL injection warning */
+    .sql-injection-warning {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .sql-injection-warning.visible {
+      opacity: 1;
+    }
+
+    /* Tank crack overlay */
+    .tank-crack {
+      stroke: var(--failure-red);
+      stroke-width: 2;
+      fill: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .tank-crack.visible {
+      opacity: 1;
+    }
+
+    /* Tank water level */
+    .tank-water-fill {
+      transition: fill 0.5s ease;
+    }
+
+    .tank-water-fill.murky {
+      fill: var(--toxic-green) !important;
+    }
+
+    /* Water labels */
+    .water-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      fill: #93C5FD;
+      text-anchor: middle;
+    }
+
+    /* ───────────────────── Tooltip ───────────────────── */
+    #tooltip {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      background: #1E293B;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      max-width: 300px;
+      pointer-events: none;
+    }
+
+    #tooltip.visible {
+      display: block;
+    }
+
+    #tooltip-name {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #60A5FA;
+      margin-bottom: 4px;
+    }
+
+    #tooltip-analogy {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      color: #ffffff;
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    #tooltip-technical {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -411,10 +548,101 @@
   <div id="electricity-layer"></div>
 
   <!-- Layer 5: Water -->
-  <div id="water-layer"></div>
+  <div id="water-layer">
+    <svg viewBox="0 0 1200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="water-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#3B82F6" />
+          <stop offset="100%" stop-color="#60A5FA" />
+        </linearGradient>
+      </defs>
+
+      <!-- Pipe: Source to Filter -->
+      <path class="water-pipe" d="M 75 100 L 270 100" />
+      <path class="water-flow-overlay" d="M 75 100 L 270 100" />
+
+      <!-- Pipe: Filter to Cache/Tank area -->
+      <path class="water-pipe" d="M 370 100 L 560 100" />
+      <path class="water-flow-overlay" d="M 370 100 L 560 100" />
+
+      <!-- Pipe: Tank to Faucet -->
+      <path class="water-pipe" d="M 700 100 L 1030 100" />
+      <path class="water-flow-overlay" d="M 700 100 L 1030 100" />
+
+      <!-- Source / Ingress (~x=50) -->
+      <g id="water-source" data-name="Ingress" data-analogy="Where water enters the city system" data-technical="API endpoint receiving incoming requests" cursor="pointer">
+        <rect x="30" y="78" width="50" height="44" rx="8" ry="8" fill="#2563EB" stroke="#1D4ED8" stroke-width="2" />
+        <rect x="55" y="88" width="20" height="24" rx="4" ry="4" fill="#3B82F6" />
+        <!-- Arrow indicator -->
+        <polygon points="80,100 70,92 70,108" fill="#60A5FA" />
+      </g>
+      <text class="water-label" x="55" y="140">Ingress</text>
+
+      <!-- Filter (~x=300) -->
+      <g id="water-filter" data-name="Validation Filter" data-analogy="Mesh that catches debris and contaminants" data-technical="Input validation and sanitization — rejects malformed data" cursor="pointer">
+        <rect x="270" y="65" width="100" height="70" rx="6" ry="6" fill="#1E3A5F" stroke="#3B82F6" stroke-width="2" />
+        <!-- Mesh/grid lines -->
+        <line class="filter-mesh" x1="280" y1="78" x2="360" y2="78" />
+        <line class="filter-mesh" x1="280" y1="88" x2="360" y2="88" />
+        <line class="filter-mesh" x1="280" y1="98" x2="360" y2="98" />
+        <line class="filter-mesh" x1="280" y1="108" x2="360" y2="108" />
+        <line class="filter-mesh" x1="280" y1="118" x2="360" y2="118" />
+      </g>
+      <text class="water-label" x="320" y="155">Filter</text>
+
+      <!-- SQL Injection Warning (hidden by default) -->
+      <text class="sql-injection-warning" x="320" y="58" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#EF4444" text-anchor="middle">SQL INJECTION</text>
+
+      <!-- Cache (~x=500) -->
+      <g id="water-cache" data-name="Cache" data-analogy="Sticky note on the fridge — quick access to frequent lookups" data-technical="Fast temporary storage (Redis, Memcached) to avoid repeated DB queries" cursor="pointer">
+        <!-- Tilted sticky note shape -->
+        <g transform="translate(490, 58) rotate(-8)">
+          <rect x="0" y="0" width="48" height="38" rx="3" ry="3" fill="#FBBF24" stroke="#D97706" stroke-width="1.5" opacity="0.9" />
+          <line x1="8" y1="12" x2="40" y2="12" stroke="#92400E" stroke-width="1" opacity="0.5" />
+          <line x1="8" y1="20" x2="36" y2="20" stroke="#92400E" stroke-width="1" opacity="0.5" />
+          <line x1="8" y1="28" x2="32" y2="28" stroke="#92400E" stroke-width="1" opacity="0.5" />
+        </g>
+        <!-- Small connector line from cache to pipe -->
+        <line x1="510" y1="95" x2="510" y2="80" stroke="#FBBF24" stroke-width="2" stroke-dasharray="4 3" />
+      </g>
+      <text class="water-label" x="512" y="55" fill="#FBBF24">Cache</text>
+
+      <!-- Tank / Database (~x=600) -->
+      <g id="water-tank" data-name="Database" data-analogy="Water storage tank — holds the city's water supply" data-technical="Persistent data store — PostgreSQL, MySQL, MongoDB" cursor="pointer">
+        <rect x="570" y="32" width="130" height="136" rx="10" ry="10" fill="#0F2A4A" stroke="#1D4ED8" stroke-width="3" />
+        <!-- Water level fill (70%) -->
+        <rect class="tank-water-fill" x="574" y="73" width="122" height="91" rx="7" ry="7" fill="#3B82F6" opacity="0.4" />
+        <!-- Water surface line -->
+        <line x1="574" y1="73" x2="696" y2="73" stroke="#60A5FA" stroke-width="1.5" opacity="0.7" />
+        <!-- Tank crack (hidden by default) -->
+        <path class="tank-crack" d="M 600 45 L 610 65 L 595 85 L 615 105 L 600 125 L 612 145 L 605 160" />
+      </g>
+      <text class="water-label" x="635" y="185">Database</text>
+
+      <!-- Faucet (~x=1050) -->
+      <g id="water-faucet" data-name="Response" data-analogy="Faucet delivering clean water to the user" data-technical="HTTP response sent back to the client" cursor="pointer">
+        <!-- Faucet body -->
+        <rect x="1030" y="82" width="60" height="24" rx="6" ry="6" fill="#2563EB" stroke="#1D4ED8" stroke-width="2" />
+        <!-- Spout -->
+        <path d="M 1090 88 Q 1120 88, 1120 100 Q 1120 112, 1110 118" stroke="#1D4ED8" stroke-width="3" fill="none" />
+        <!-- Drip -->
+        <ellipse cx="1110" cy="128" rx="4" ry="6" fill="#60A5FA" opacity="0.7" />
+        <!-- Handle -->
+        <rect x="1050" y="72" width="20" height="12" rx="3" ry="3" fill="#1D4ED8" />
+      </g>
+      <text class="water-label" x="1070" y="155">Response</text>
+    </svg>
+  </div>
 
   <!-- Layer 6: Control Panel -->
   <div id="control-panel"></div>
+
+  <!-- Tooltip -->
+  <div id="tooltip">
+    <div id="tooltip-name"></div>
+    <div id="tooltip-analogy"></div>
+    <div id="tooltip-technical"></div>
+  </div>
 
   <script>
     /* ───────────────────── State ───────────────────── */
@@ -623,6 +851,7 @@
       state.toggles[key] = checked;
       updateStats();
       renderStats();
+      renderCity();
     }
 
     function selectSpeed(value) {
@@ -719,8 +948,109 @@
       }
     }
 
+    /* ───────────────────── Tooltip System ───────────────────── */
+    function setupTooltips() {
+      var tooltip = document.getElementById('tooltip');
+      var tooltipName = document.getElementById('tooltip-name');
+      var tooltipAnalogy = document.getElementById('tooltip-analogy');
+      var tooltipTechnical = document.getElementById('tooltip-technical');
+
+      var hoverTargets = document.querySelectorAll('[data-name]');
+
+      hoverTargets.forEach(function(target) {
+        target.addEventListener('mouseenter', function(e) {
+          var name = target.getAttribute('data-name');
+          var analogy = target.getAttribute('data-analogy');
+          var technical = target.getAttribute('data-technical');
+
+          tooltipName.textContent = name;
+          tooltipAnalogy.textContent = analogy;
+          tooltipTechnical.textContent = technical;
+
+          tooltip.classList.add('visible');
+
+          var rect = target.getBoundingClientRect();
+          var tooltipRect = tooltip.getBoundingClientRect();
+
+          var left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+          var top = rect.top - tooltipRect.height - 10;
+
+          // Keep tooltip within viewport
+          if (left < 8) left = 8;
+          if (left + tooltipRect.width > window.innerWidth - 8) {
+            left = window.innerWidth - tooltipRect.width - 8;
+          }
+          if (top < 8) {
+            top = rect.bottom + 10;
+          }
+
+          tooltip.style.left = left + 'px';
+          tooltip.style.top = top + 'px';
+        });
+
+        target.addEventListener('mouseleave', function() {
+          tooltip.classList.remove('visible');
+        });
+      });
+    }
+
+    /* ───────────────────── Render City (visual state) ───────────────────── */
+    function renderCity() {
+      var t = state.toggles;
+
+      // --- Validation toggle affects water layer ---
+      var flowOverlays = document.querySelectorAll('.water-flow-overlay');
+      var pipes = document.querySelectorAll('.water-pipe');
+      var filterMeshLines = document.querySelectorAll('.filter-mesh');
+      var sqlWarning = document.querySelector('.sql-injection-warning');
+      var tankCrack = document.querySelector('.tank-crack');
+      var tankWater = document.querySelector('.tank-water-fill');
+
+      if (!t.validation) {
+        // Water turns murky green
+        flowOverlays.forEach(function(overlay) {
+          overlay.classList.add('murky');
+        });
+        pipes.forEach(function(pipe) {
+          pipe.classList.add('murky');
+        });
+
+        // Filter mesh fades out
+        filterMeshLines.forEach(function(line) {
+          line.classList.add('hidden');
+        });
+
+        // SQL injection warning appears
+        if (sqlWarning) sqlWarning.classList.add('visible');
+
+        // Tank crack appears
+        if (tankCrack) tankCrack.classList.add('visible');
+
+        // Tank water turns murky
+        if (tankWater) tankWater.classList.add('murky');
+      } else {
+        // Restore healthy state
+        flowOverlays.forEach(function(overlay) {
+          overlay.classList.remove('murky');
+        });
+        pipes.forEach(function(pipe) {
+          pipe.classList.remove('murky');
+        });
+
+        filterMeshLines.forEach(function(line) {
+          line.classList.remove('hidden');
+        });
+
+        if (sqlWarning) sqlWarning.classList.remove('visible');
+        if (tankCrack) tankCrack.classList.remove('visible');
+        if (tankWater) tankWater.classList.remove('murky');
+      }
+    }
+
     /* ───────────────────── Init ───────────────────── */
     buildControlPanel();
+    setupTooltips();
+    renderCity();
   </script>
 </body>
 </html>
