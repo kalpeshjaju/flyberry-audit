@@ -1090,23 +1090,260 @@
     .request-dot.failure-pulse {
       animation: pulse-failure 0.25s ease-in-out 2;
     }
+
+    /* ───────────────────── Click-to-Learn Card Overlay ───────────────────── */
+    .card-overlay {
+      position: fixed;
+      z-index: 1100;
+      background: #1E293B;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+      max-width: 320px;
+      padding: 16px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+    }
+
+    .card-overlay.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .card-overlay-close {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .card-overlay-close:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .card-overlay-name {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      padding-right: 24px;
+    }
+
+    .card-overlay-section {
+      margin-bottom: 6px;
+    }
+
+    .card-overlay-label {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+    }
+
+    .card-overlay-text {
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      color: var(--text-primary);
+      line-height: 1.45;
+    }
+
+    .card-overlay-text.technical {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .card-overlay-break-btn {
+      margin-top: 10px;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--failure-red);
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--failure-red);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: inline-block;
+    }
+
+    .card-overlay-break-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #FCA5A5;
+    }
+
+    /* ───────────────────── Layer Transition Strips ───────────────────── */
+    .layer-transition {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 20px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .layer-transition.bottom {
+      bottom: 0;
+    }
+
+    .layer-transition.top {
+      top: 0;
+    }
+
+    /* ───────────────────── Title Bar Enhancement ───────────────────── */
+    .title-bar-bg {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 420px;
+      height: 52px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 70%, transparent 100%);
+      border-radius: 0 0 16px 16px;
+      z-index: 9;
+      pointer-events: none;
+    }
+
+    /* ───────────────────── Responsive — Mobile ───────────────────── */
+    @media (max-width: 768px) {
+      body {
+        grid-template-rows: 12% 18% 14% 14% 14% auto;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      html, body {
+        height: auto;
+        overflow: auto;
+      }
+
+      .title-bar {
+        font-size: 1rem;
+      }
+
+      .title-bar-bg {
+        width: 300px;
+        height: 44px;
+      }
+
+      /* Control Panel: stacked layout */
+      #control-panel {
+        padding: 10px 12px;
+        grid-template-rows: auto auto auto auto;
+        gap: 10px;
+      }
+
+      .cp-scenario-row {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .scenario-btn {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+      }
+
+      .cp-middle-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .toggles-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .cp-stats {
+        min-width: unset;
+      }
+
+      .cp-bottom-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .send-request-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .speed-controls {
+        justify-content: center;
+      }
+
+      .cp-section-label {
+        font-size: 0.68rem;
+      }
+
+      .toggle-label {
+        font-size: 0.68rem;
+      }
+
+      .stat-row {
+        font-size: 0.7rem;
+      }
+
+      /* Card overlay: full-width slide-up sheet on mobile */
+      .card-overlay {
+        max-width: none;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        top: auto !important;
+        border-radius: 16px 16px 0 0;
+        width: 100%;
+        transform: translateY(100%);
+      }
+
+      .card-overlay.visible {
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 <body>
 
   <!-- Layer 1: Sky -->
   <div id="sky-layer">
+    <div class="title-bar-bg"></div>
     <div class="title-bar">Code Decoded: City Simulator</div>
+    <div class="layer-transition bottom" style="background: linear-gradient(180deg, transparent, #d4c4a8);"></div>
   </div>
 
   <!-- Layer 2: Buildings -->
-  <div id="building-layer"></div>
+  <div id="building-layer" style="position:relative;">
+    <div class="layer-transition bottom" style="background: linear-gradient(180deg, transparent, #5a6370);"></div>
+  </div>
 
   <!-- Layer 3: Roads -->
-  <div id="road-layer"></div>
+  <div id="road-layer">
+    <div class="layer-transition bottom" style="background: linear-gradient(180deg, transparent, #3d2b1a);"></div>
+  </div>
 
   <!-- Layer 4: Electricity -->
-  <div id="electricity-layer"></div>
+  <div id="electricity-layer">
+    <div class="layer-transition bottom" style="background: linear-gradient(180deg, transparent, #1a3a6e);"></div>
+  </div>
 
   <!-- Layer 5: Water -->
   <div id="water-layer">
@@ -3463,6 +3700,298 @@
       }
     }
 
+    /* ───────────────────── Click-to-Learn Card Overlay ───────────────────── */
+    var activeCardOverlay = null;
+
+    // Map element IDs to toggle keys for "See it break" button
+    var ELEMENT_TOGGLE_MAP = {
+      'water-filter': 'validation',
+      'water-cache': 'cache',
+      'road-toll-booth': 'auth',
+      'road-traffic-light': 'rateLimiter',
+      'elec-circuit-breaker': 'circuitBreaker'
+    };
+
+    // Layer accent colors for card name styling
+    var LAYER_ACCENT_COLORS = {
+      'water': '#60A5FA',
+      'sky': '#FFD700',
+      'road': '#D1D5DB',
+      'electricity': '#FCD34D',
+      'building': '#D4B896'
+    };
+
+    function getLayerForElement(element) {
+      var node = element;
+      while (node && node !== document.body) {
+        if (node.id === 'water-layer') return 'water';
+        if (node.id === 'sky-layer') return 'sky';
+        if (node.id === 'road-layer') return 'road';
+        if (node.id === 'electricity-layer') return 'electricity';
+        if (node.id === 'building-layer') return 'building';
+        node = node.parentElement;
+      }
+      return 'water';
+    }
+
+    function getToggleKeyForElement(element) {
+      // Direct ID match first
+      if (element.id && ELEMENT_TOGGLE_MAP[element.id]) {
+        return ELEMENT_TOGGLE_MAP[element.id];
+      }
+      // Check bldg-* with loadBalancer context
+      if (element.id && element.id.indexOf('bldg-') === 0) {
+        return 'loadBalancer';
+      }
+      // Check ai-worker-* elements
+      if (element.id && element.id.indexOf('ai-worker-') === 0) {
+        return 'aiWorkers';
+      }
+      return null;
+    }
+
+    function closeCardOverlay() {
+      if (activeCardOverlay) {
+        activeCardOverlay.classList.remove('visible');
+        var ref = activeCardOverlay;
+        setTimeout(function() {
+          if (ref.parentNode) {
+            ref.parentNode.removeChild(ref);
+          }
+        }, 220);
+        activeCardOverlay = null;
+      }
+    }
+
+    function openCardOverlay(targetEl) {
+      if (state.requestInFlight) return;
+
+      var name = targetEl.getAttribute('data-name');
+      var analogy = targetEl.getAttribute('data-analogy');
+      var technical = targetEl.getAttribute('data-technical');
+      if (!name) return;
+
+      // Close previous card
+      closeCardOverlay();
+
+      var layer = getLayerForElement(targetEl);
+      var accentColor = LAYER_ACCENT_COLORS[layer] || '#60A5FA';
+
+      // Build card with DOM methods
+      var card = document.createElement('div');
+      card.className = 'card-overlay';
+
+      // Close button
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'card-overlay-close';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.textContent = '\u2715';
+      closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeCardOverlay();
+      });
+      card.appendChild(closeBtn);
+
+      // Name
+      var nameDiv = document.createElement('div');
+      nameDiv.className = 'card-overlay-name';
+      nameDiv.style.color = accentColor;
+      nameDiv.textContent = name;
+      card.appendChild(nameDiv);
+
+      // Analogy section
+      if (analogy) {
+        var analogySection = document.createElement('div');
+        analogySection.className = 'card-overlay-section';
+        var analogyLabel = document.createElement('div');
+        analogyLabel.className = 'card-overlay-label';
+        analogyLabel.textContent = 'Analogy:';
+        analogySection.appendChild(analogyLabel);
+        var analogyText = document.createElement('div');
+        analogyText.className = 'card-overlay-text';
+        analogyText.textContent = analogy;
+        analogySection.appendChild(analogyText);
+        card.appendChild(analogySection);
+      }
+
+      // Technical section
+      if (technical) {
+        var techSection = document.createElement('div');
+        techSection.className = 'card-overlay-section';
+        var techLabel = document.createElement('div');
+        techLabel.className = 'card-overlay-label';
+        techLabel.textContent = 'Technical:';
+        techSection.appendChild(techLabel);
+        var techText = document.createElement('div');
+        techText.className = 'card-overlay-text technical';
+        techText.textContent = technical;
+        techSection.appendChild(techText);
+        card.appendChild(techSection);
+      }
+
+      // "See it break" button
+      var toggleKey = getToggleKeyForElement(targetEl);
+      if (toggleKey) {
+        var breakBtn = document.createElement('button');
+        breakBtn.className = 'card-overlay-break-btn';
+        breakBtn.textContent = 'See it break';
+        breakBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          // Find the toggle checkbox and flip it
+          var checkbox = document.querySelector('input[data-toggle="' + toggleKey + '"]');
+          if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            toggleChanged(toggleKey, checkbox.checked);
+          }
+          closeCardOverlay();
+        });
+        card.appendChild(breakBtn);
+      }
+
+      document.body.appendChild(card);
+      activeCardOverlay = card;
+
+      // Position the card
+      positionCardOverlay(card, targetEl);
+
+      // Trigger the visible transition
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          card.classList.add('visible');
+        });
+      });
+    }
+
+    function positionCardOverlay(card, targetEl) {
+      var rect = targetEl.getBoundingClientRect();
+      var centerX = rect.left + rect.width / 2;
+      var aboveY = rect.top;
+
+      // Check if mobile
+      if (window.innerWidth <= 768) {
+        // Mobile: full-width slide-up sheet — CSS handles positioning
+        return;
+      }
+
+      // Temporarily measure card size
+      card.style.visibility = 'hidden';
+      card.style.display = 'block';
+      var cardRect = card.getBoundingClientRect();
+      card.style.visibility = '';
+
+      var cardWidth = cardRect.width || 320;
+      var cardHeight = cardRect.height || 200;
+
+      // Try above
+      var left = centerX - cardWidth / 2;
+      var top = aboveY - cardHeight - 12;
+
+      // Fall back to below if not enough space above
+      if (top < 8) {
+        top = rect.bottom + 12;
+      }
+
+      // Clamp to viewport edges
+      if (left < 8) left = 8;
+      if (left + cardWidth > window.innerWidth - 8) {
+        left = window.innerWidth - cardWidth - 8;
+      }
+      if (top + cardHeight > window.innerHeight - 8) {
+        top = window.innerHeight - cardHeight - 8;
+      }
+      if (top < 8) top = 8;
+
+      card.style.left = left + 'px';
+      card.style.top = top + 'px';
+    }
+
+    function setupClickOverlays() {
+      var clickTargets = document.querySelectorAll('[data-name]');
+
+      clickTargets.forEach(function(target) {
+        target.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (state.requestInFlight) return;
+          openCardOverlay(target);
+        });
+      });
+
+      // Click outside closes card
+      document.addEventListener('click', function(e) {
+        if (activeCardOverlay && !activeCardOverlay.contains(e.target)) {
+          closeCardOverlay();
+        }
+      });
+    }
+
+    /* ───────────────────── Keyboard Shortcuts ───────────────────── */
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', function(e) {
+        // Don't trigger when focused on input elements
+        var tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) {
+          return;
+        }
+
+        var key = e.key;
+
+        // Space = Send Request
+        if (key === ' ' || key === 'Spacebar') {
+          e.preventDefault();
+          if (!state.requestInFlight) {
+            sendRequest();
+          }
+          return;
+        }
+
+        // 1 = Speed 1x
+        if (key === '1') {
+          selectSpeed(1);
+          return;
+        }
+
+        // 2 = Speed 2x
+        if (key === '2') {
+          selectSpeed(2);
+          return;
+        }
+
+        // 3 = Speed 5x
+        if (key === '3') {
+          selectSpeed(5);
+          return;
+        }
+
+        // 4 = Step mode
+        if (key === '4') {
+          selectSpeed('step');
+          return;
+        }
+
+        // Escape = Close card overlay
+        if (key === 'Escape') {
+          closeCardOverlay();
+          return;
+        }
+
+        // R = Reset all toggles to ON
+        if (key === 'r' || key === 'R') {
+          var toggleKeys = Object.keys(state.toggles);
+          toggleKeys.forEach(function(k) {
+            state.toggles[k] = true;
+            var checkbox = document.querySelector('input[data-toggle="' + k + '"]');
+            if (checkbox) {
+              checkbox.checked = true;
+            }
+          });
+          updateStats();
+          renderStats();
+          renderCity();
+          return;
+        }
+      });
+    }
+
     /* ───────────────────── Init ───────────────────── */
     buildControlPanel();
     buildSkyLayer();
@@ -3470,6 +3999,8 @@
     buildRoadLayer();
     buildElectricityLayer();
     setupTooltips();
+    setupClickOverlays();
+    setupKeyboardShortcuts();
     renderCity();
   </script>
 </body>
