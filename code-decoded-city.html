@@ -786,6 +786,189 @@
       animation: arrow-scroll 1s linear infinite;
     }
 
+    /* ───────────────────── Building Layer SVG ───────────────────── */
+    #building-layer {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #building-layer svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Building labels */
+    .building-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      fill: #D4B896;
+      text-anchor: middle;
+    }
+
+    /* Heartbeat line animation in hospital window */
+    @keyframes heartbeat-line {
+      0% { stroke-dashoffset: 60; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    .heartbeat-path {
+      stroke: #EF4444;
+      stroke-width: 1.5;
+      fill: none;
+      stroke-dasharray: 30 30;
+      animation: heartbeat-line 1.5s linear infinite;
+    }
+
+    /* Building active glow */
+    .building-active .bldg-body {
+      filter: url(#building-glow);
+    }
+
+    /* Overloaded building (load balancer OFF) */
+    .building-overloaded .bldg-body {
+      fill: #EF4444 !important;
+      opacity: 0.85;
+    }
+
+    .building-overloaded .bldg-window {
+      fill: #EF4444 !important;
+      opacity: 1;
+    }
+
+    .building-overloaded .bldg-door {
+      fill: #991B1B !important;
+    }
+
+    /* Dimmed buildings (load balancer OFF) */
+    .building-dimmed {
+      opacity: 0.3;
+      transition: opacity 0.5s ease;
+    }
+
+    /* Heat shimmer above overloaded building */
+    @keyframes heat-shimmer {
+      0% { d: path("M 960 20 Q 975 15, 990 20 Q 1005 25, 1020 20"); opacity: 0.6; }
+      25% { d: path("M 960 18 Q 978 24, 990 18 Q 1002 12, 1020 18"); opacity: 0.4; }
+      50% { d: path("M 960 22 Q 972 16, 990 22 Q 1008 28, 1020 22"); opacity: 0.6; }
+      75% { d: path("M 960 19 Q 980 25, 990 19 Q 1000 13, 1020 19"); opacity: 0.3; }
+      100% { d: path("M 960 20 Q 975 15, 990 20 Q 1005 25, 1020 20"); opacity: 0.6; }
+    }
+
+    @keyframes shimmer-wave {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      25% { transform: translateY(-3px); opacity: 0.3; }
+      50% { transform: translateY(2px); opacity: 0.6; }
+      75% { transform: translateY(-2px); opacity: 0.4; }
+    }
+
+    .heat-shimmer-line {
+      stroke: #EF4444;
+      stroke-width: 1.5;
+      fill: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .heat-shimmer-visible .heat-shimmer-line {
+      opacity: 0.5;
+      animation: shimmer-wave 2s ease-in-out infinite;
+    }
+
+    .heat-shimmer-visible .heat-shimmer-line:nth-child(2) {
+      animation-delay: 0.3s;
+      stroke: #F97316;
+    }
+
+    .heat-shimmer-visible .heat-shimmer-line:nth-child(3) {
+      animation-delay: 0.6s;
+      stroke: #FBBF24;
+    }
+
+    /* ───────────────────── Sky Layer SVG ───────────────────── */
+    #sky-layer svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Cloud drift animation */
+    @keyframes cloud-drift-1 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-200px); }
+    }
+
+    @keyframes cloud-drift-2 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-300px); }
+    }
+
+    @keyframes cloud-drift-3 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-250px); }
+    }
+
+    @keyframes cloud-drift-4 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-180px); }
+    }
+
+    .sky-cloud-1 {
+      animation: cloud-drift-1 35s linear infinite;
+    }
+
+    .sky-cloud-2 {
+      animation: cloud-drift-2 42s linear infinite;
+    }
+
+    .sky-cloud-3 {
+      animation: cloud-drift-3 30s linear infinite;
+    }
+
+    .sky-cloud-4 {
+      animation: cloud-drift-4 45s linear infinite;
+    }
+
+    /* AI Worker styling */
+    .ai-worker {
+      transition: opacity 0.5s ease;
+    }
+
+    .ai-worker.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* AI Worker label */
+    .sky-worker-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      fill: #FDE68A;
+      text-anchor: middle;
+    }
+
+    /* Failure signs (hidden by default) */
+    .sky-failure-sign {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .sky-failure-sign.visible {
+      opacity: 1;
+    }
+
+    /* Sky desaturation when AI workers are off */
+    #sky-layer.sky-desaturated {
+      filter: saturate(0.5);
+      transition: filter 0.5s ease;
+    }
+
+    #sky-layer {
+      transition: filter 0.5s ease;
+    }
+
     /* ───────────────────── Tooltip ───────────────────── */
     #tooltip {
       display: none;
@@ -1997,6 +2180,764 @@
       container.appendChild(svg);
     }
 
+    /* ───────────────────── Build Sky Layer ───────────────────── */
+    function buildSkyLayer() {
+      var container = document.getElementById('sky-layer');
+      var svg = svgEl('svg', {
+        viewBox: '0 0 1200 200',
+        width: '100%',
+        height: '100%',
+        preserveAspectRatio: 'xMidYMid meet',
+        xmlns: SVG_NS
+      });
+
+      var mainGroup = svgEl('g', { id: 'sky-main-group' });
+
+      // ─── Clouds ───
+      // Cloud 1: large, top-left
+      var cloud1 = svgEl('g', { class: 'sky-cloud-1', opacity: '0.7' });
+      cloud1.appendChild(svgEl('ellipse', { cx: '150', cy: '50', rx: '60', ry: '25', fill: '#ffffff', opacity: '0.8' }));
+      cloud1.appendChild(svgEl('ellipse', { cx: '180', cy: '40', rx: '50', ry: '22', fill: '#ffffff', opacity: '0.75' }));
+      cloud1.appendChild(svgEl('ellipse', { cx: '120', cy: '45', rx: '40', ry: '18', fill: '#ffffff', opacity: '0.7' }));
+      cloud1.appendChild(svgEl('ellipse', { cx: '160', cy: '55', rx: '55', ry: '20', fill: '#f0f0f0', opacity: '0.6' }));
+      mainGroup.appendChild(cloud1);
+
+      // Cloud 2: medium, center-right, higher
+      var cloud2 = svgEl('g', { class: 'sky-cloud-2', opacity: '0.6' });
+      cloud2.appendChild(svgEl('ellipse', { cx: '750', cy: '35', rx: '45', ry: '18', fill: '#ffffff', opacity: '0.8' }));
+      cloud2.appendChild(svgEl('ellipse', { cx: '775', cy: '28', rx: '38', ry: '16', fill: '#ffffff', opacity: '0.7' }));
+      cloud2.appendChild(svgEl('ellipse', { cx: '730', cy: '32', rx: '30', ry: '14', fill: '#f0f0f0', opacity: '0.65' }));
+      mainGroup.appendChild(cloud2);
+
+      // Cloud 3: small, far right
+      var cloud3 = svgEl('g', { class: 'sky-cloud-3', opacity: '0.65' });
+      cloud3.appendChild(svgEl('ellipse', { cx: '1050', cy: '55', rx: '35', ry: '15', fill: '#ffffff', opacity: '0.75' }));
+      cloud3.appendChild(svgEl('ellipse', { cx: '1070', cy: '48', rx: '28', ry: '13', fill: '#ffffff', opacity: '0.7' }));
+      cloud3.appendChild(svgEl('ellipse', { cx: '1035', cy: '52', rx: '25', ry: '12', fill: '#f0f0f0', opacity: '0.6' }));
+      mainGroup.appendChild(cloud3);
+
+      // Cloud 4: wispy, center-left
+      var cloud4 = svgEl('g', { class: 'sky-cloud-4', opacity: '0.5' });
+      cloud4.appendChild(svgEl('ellipse', { cx: '450', cy: '25', rx: '50', ry: '12', fill: '#ffffff', opacity: '0.6' }));
+      cloud4.appendChild(svgEl('ellipse', { cx: '480', cy: '22', rx: '35', ry: '10', fill: '#ffffff', opacity: '0.55' }));
+      cloud4.appendChild(svgEl('ellipse', { cx: '430', cy: '28', rx: '30', ry: '10', fill: '#f0f0f0', opacity: '0.5' }));
+      mainGroup.appendChild(cloud4);
+
+      // ─── AI Workers ───
+      var workerConfigs = [
+        {
+          id: 'ai-worker-rag', x: 200, name: 'RAG',
+          analogy: 'Official who checks the map before answering \u2014 looks things up first',
+          technical: 'Retrieval-Augmented Generation: search docs first, then generate answer',
+          accessory: 'clipboard'
+        },
+        {
+          id: 'ai-worker-inference', x: 400, name: 'Inference',
+          analogy: 'Trained doctor seeing patients \u2014 applying years of education daily',
+          technical: 'Running a trained model to generate outputs on new inputs',
+          accessory: 'pointing'
+        },
+        {
+          id: 'ai-worker-training', x: 600, name: 'Training',
+          analogy: 'Student at university \u2014 years of study before being useful',
+          technical: 'Feeding massive data to a model so it learns patterns. Expensive, done rarely',
+          accessory: 'desk'
+        },
+        {
+          id: 'ai-worker-agent', x: 800, name: 'AI Agent',
+          analogy: 'Autonomous city worker with a to-do list and tools \u2014 decides what to do next',
+          technical: 'AI that plans, uses tools, and takes actions toward a goal. Claude Code, Devin',
+          accessory: 'megaphone'
+        },
+        {
+          id: 'ai-worker-hallucination', x: 1000, name: 'Hallucination',
+          analogy: 'Official confidently giving wrong directions \u2014 sounds right, completely wrong',
+          technical: 'Model generating plausible but factually incorrect information with full confidence',
+          accessory: 'pointing-wrong'
+        }
+      ];
+
+      // Failure-state sign labels
+      var failureLabels = ['IF/ELSE', 'SWITCH', 'MANUAL', 'LOOP', 'HARDCODED'];
+
+      workerConfigs.forEach(function(cfg, idx) {
+        var workerGroup = svgEl('g', {
+          id: cfg.id,
+          class: 'ai-worker',
+          'data-name': cfg.name,
+          'data-analogy': cfg.analogy,
+          'data-technical': cfg.technical,
+          cursor: 'pointer'
+        });
+
+        var baseX = cfg.x;
+        var baseY = 140;
+
+        // Head (circle)
+        workerGroup.appendChild(svgEl('circle', {
+          cx: String(baseX), cy: String(baseY - 22), r: '6',
+          fill: '#FFD700'
+        }));
+
+        // Body (torso line)
+        workerGroup.appendChild(svgEl('line', {
+          x1: String(baseX), y1: String(baseY - 16),
+          x2: String(baseX), y2: String(baseY),
+          stroke: '#FFD700', 'stroke-width': '2.5', 'stroke-linecap': 'round'
+        }));
+
+        // Left leg
+        workerGroup.appendChild(svgEl('line', {
+          x1: String(baseX), y1: String(baseY),
+          x2: String(baseX - 5), y2: String(baseY + 10),
+          stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+        }));
+
+        // Right leg
+        workerGroup.appendChild(svgEl('line', {
+          x1: String(baseX), y1: String(baseY),
+          x2: String(baseX + 5), y2: String(baseY + 10),
+          stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+        }));
+
+        // Accessory-specific arms and props
+        if (cfg.accessory === 'clipboard') {
+          // Left arm relaxed
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX - 7), y2: String(baseY - 4),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Right arm holding clipboard
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX + 10), y2: String(baseY - 8),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Clipboard
+          workerGroup.appendChild(svgEl('rect', {
+            x: String(baseX + 8), y: String(baseY - 16),
+            width: '10', height: '14', rx: '1', ry: '1',
+            fill: '#F59E0B', stroke: '#D97706', 'stroke-width': '0.8'
+          }));
+          // Clipboard clip
+          workerGroup.appendChild(svgEl('rect', {
+            x: String(baseX + 11), y: String(baseY - 18),
+            width: '4', height: '3', rx: '0.5', ry: '0.5',
+            fill: '#D97706'
+          }));
+          // Lines on clipboard
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX + 10), y1: String(baseY - 12),
+            x2: String(baseX + 16), y2: String(baseY - 12),
+            stroke: '#92400E', 'stroke-width': '0.8'
+          }));
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX + 10), y1: String(baseY - 9),
+            x2: String(baseX + 15), y2: String(baseY - 9),
+            stroke: '#92400E', 'stroke-width': '0.8'
+          }));
+        } else if (cfg.accessory === 'pointing') {
+          // Left arm relaxed
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX - 7), y2: String(baseY - 4),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Right arm pointing forward
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX + 14), y2: String(baseY - 16),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Pointing finger dot
+          workerGroup.appendChild(svgEl('circle', {
+            cx: String(baseX + 15), cy: String(baseY - 17), r: '1.5',
+            fill: '#FFD700'
+          }));
+        } else if (cfg.accessory === 'desk') {
+          // Both arms forward (at desk)
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX - 8), y2: String(baseY - 6),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX + 8), y2: String(baseY - 6),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Desk surface
+          workerGroup.appendChild(svgEl('rect', {
+            x: String(baseX - 12), y: String(baseY - 5),
+            width: '24', height: '3', rx: '1', ry: '1',
+            fill: '#B45309'
+          }));
+          // Desk legs
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX - 10), y1: String(baseY - 2),
+            x2: String(baseX - 10), y2: String(baseY + 6),
+            stroke: '#92400E', 'stroke-width': '1.5'
+          }));
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX + 10), y1: String(baseY - 2),
+            x2: String(baseX + 10), y2: String(baseY + 6),
+            stroke: '#92400E', 'stroke-width': '1.5'
+          }));
+          // Book on desk
+          workerGroup.appendChild(svgEl('rect', {
+            x: String(baseX - 5), y: String(baseY - 9),
+            width: '8', height: '4', rx: '0.5', ry: '0.5',
+            fill: '#F59E0B', opacity: '0.8'
+          }));
+        } else if (cfg.accessory === 'megaphone') {
+          // Left arm relaxed
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX - 7), y2: String(baseY - 4),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Right arm holding megaphone up
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX + 10), y2: String(baseY - 18),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Megaphone (trapezoid shape via path)
+          workerGroup.appendChild(svgEl('path', {
+            d: 'M ' + (baseX + 10) + ' ' + (baseY - 22) + ' L ' + (baseX + 22) + ' ' + (baseY - 26) + ' L ' + (baseX + 22) + ' ' + (baseY - 16) + ' L ' + (baseX + 10) + ' ' + (baseY - 18) + ' Z',
+            fill: '#F59E0B', stroke: '#D97706', 'stroke-width': '0.8'
+          }));
+          // Sound waves
+          workerGroup.appendChild(svgEl('path', {
+            d: 'M ' + (baseX + 24) + ' ' + (baseY - 24) + ' Q ' + (baseX + 28) + ' ' + (baseY - 21) + ' ' + (baseX + 24) + ' ' + (baseY - 18),
+            stroke: '#FDE68A', 'stroke-width': '1', fill: 'none', opacity: '0.6'
+          }));
+          workerGroup.appendChild(svgEl('path', {
+            d: 'M ' + (baseX + 26) + ' ' + (baseY - 26) + ' Q ' + (baseX + 32) + ' ' + (baseY - 21) + ' ' + (baseX + 26) + ' ' + (baseY - 16),
+            stroke: '#FDE68A', 'stroke-width': '0.8', fill: 'none', opacity: '0.4'
+          }));
+        } else if (cfg.accessory === 'pointing-wrong') {
+          // Right arm relaxed
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX + 7), y2: String(baseY - 4),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Left arm pointing backwards (wrong way)
+          workerGroup.appendChild(svgEl('line', {
+            x1: String(baseX), y1: String(baseY - 12),
+            x2: String(baseX - 14), y2: String(baseY - 16),
+            stroke: '#FFD700', 'stroke-width': '2', 'stroke-linecap': 'round'
+          }));
+          // Pointing finger dot
+          workerGroup.appendChild(svgEl('circle', {
+            cx: String(baseX - 15), cy: String(baseY - 17), r: '1.5',
+            fill: '#FFD700'
+          }));
+          // Small "?" above head
+          workerGroup.appendChild(svgEl('text', {
+            x: String(baseX + 3), y: String(baseY - 32),
+            'font-family': 'JetBrains Mono, monospace', 'font-size': '10', 'font-weight': '700',
+            fill: '#EF4444', 'text-anchor': 'middle'
+          }, [document.createTextNode('?')]));
+        }
+
+        mainGroup.appendChild(workerGroup);
+
+        // Worker label
+        mainGroup.appendChild(svgEl('text', {
+          x: String(baseX), y: String(baseY + 22),
+          class: 'sky-worker-label'
+        }, [document.createTextNode(cfg.name)]));
+
+        // ─── Failure-state sign (hidden by default) ───
+        var signGroup = svgEl('g', {
+          class: 'sky-failure-sign',
+          id: 'sky-sign-' + idx
+        });
+
+        // Sign post
+        signGroup.appendChild(svgEl('line', {
+          x1: String(baseX), y1: String(baseY + 10),
+          x2: String(baseX), y2: String(baseY - 10),
+          stroke: '#9CA3AF', 'stroke-width': '1.5'
+        }));
+
+        // Sign board
+        signGroup.appendChild(svgEl('rect', {
+          x: String(baseX - 22), y: String(baseY - 22),
+          width: '44', height: '16', rx: '2', ry: '2',
+          fill: '#ffffff', stroke: '#374151', 'stroke-width': '1'
+        }));
+
+        // Sign text
+        signGroup.appendChild(svgEl('text', {
+          x: String(baseX), y: String(baseY - 11),
+          'font-family': 'JetBrains Mono, monospace', 'font-size': '8', 'font-weight': '600',
+          fill: '#1F2937', 'text-anchor': 'middle'
+        }, [document.createTextNode(failureLabels[idx])]));
+
+        mainGroup.appendChild(signGroup);
+      });
+
+      svg.appendChild(mainGroup);
+      container.appendChild(svg);
+    }
+
+    /* ───────────────────── Build Building Layer ───────────────────── */
+    function buildBuildingLayer() {
+      var container = document.getElementById('building-layer');
+      var svg = svgEl('svg', {
+        viewBox: '0 0 1200 280',
+        width: '100%',
+        height: '100%',
+        preserveAspectRatio: 'xMidYMid meet',
+        xmlns: SVG_NS
+      });
+
+      // Defs: glow filter for active buildings
+      var defs = svgEl('defs');
+      var glowFilter = svgEl('filter', { id: 'building-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' });
+      var feGaussian = svgEl('feGaussianBlur', { stdDeviation: '6', result: 'coloredBlur' });
+      var feMerge = svgEl('feMerge');
+      feMerge.appendChild(svgEl('feMergeNode', { in: 'coloredBlur' }));
+      feMerge.appendChild(svgEl('feMergeNode', { in: 'SourceGraphic' }));
+      glowFilter.appendChild(feGaussian);
+      glowFilter.appendChild(feMerge);
+      defs.appendChild(glowFilter);
+      svg.appendChild(defs);
+
+      var mainGroup = svgEl('g', { id: 'building-main-group' });
+
+      // ─── Ground line connecting all buildings ───
+      mainGroup.appendChild(svgEl('line', {
+        x1: '50', y1: '240', x2: '1150', y2: '240',
+        stroke: '#C4A882', 'stroke-width': '3', 'stroke-linecap': 'round'
+      }));
+      mainGroup.appendChild(svgEl('rect', {
+        x: '50', y: '240', width: '1100', height: '12',
+        fill: '#C4A882', opacity: '0.3', rx: '2'
+      }));
+
+      // ═══════════════════════════════════════════════════════
+      // BUILDING 1: Hospital (x=100) — Health Check
+      // ═══════════════════════════════════════════════════════
+      var hospital = svgEl('g', {
+        id: 'bldg-hospital',
+        'data-name': 'Health Check',
+        'data-analogy': 'Hospital monitoring patient vitals \u2014 constant heartbeat check',
+        'data-technical': 'Health check endpoints, keep-alive pings, uptime monitoring (Datadog, Pingdom)',
+        cursor: 'pointer'
+      });
+
+      // Main body
+      hospital.appendChild(svgEl('rect', {
+        x: '60', y: '90', width: '90', height: '150', rx: '3', ry: '3',
+        fill: '#E8D5B7', stroke: '#C4A882', 'stroke-width': '2', class: 'bldg-body'
+      }));
+
+      // Roof — white/red hospital roof
+      hospital.appendChild(svgEl('rect', {
+        x: '55', y: '80', width: '100', height: '15', rx: '2', ry: '2',
+        fill: '#FFFFFF', stroke: '#DC2626', 'stroke-width': '1.5'
+      }));
+      hospital.appendChild(svgEl('rect', {
+        x: '55', y: '80', width: '100', height: '5', rx: '2', ry: '2',
+        fill: '#DC2626'
+      }));
+
+      // Cross icon on facade
+      hospital.appendChild(svgEl('rect', {
+        x: '97', y: '105', width: '16', height: '4', rx: '1', fill: '#DC2626'
+      }));
+      hospital.appendChild(svgEl('rect', {
+        x: '103', y: '99', width: '4', height: '16', rx: '1', fill: '#DC2626'
+      }));
+
+      // Windows — row 1
+      hospital.appendChild(svgEl('rect', {
+        x: '70', y: '130', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.9', class: 'bldg-window'
+      }));
+      hospital.appendChild(svgEl('rect', {
+        x: '126', y: '130', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.9', class: 'bldg-window'
+      }));
+
+      // Heartbeat monitor window (center)
+      hospital.appendChild(svgEl('rect', {
+        x: '93', y: '130', width: '24', height: '18', rx: '2', ry: '2',
+        fill: '#1a1a2e', stroke: '#374151', 'stroke-width': '0.5'
+      }));
+      hospital.appendChild(svgEl('path', {
+        d: 'M 95 139 L 100 139 L 102 133 L 105 145 L 108 136 L 110 139 L 115 139',
+        class: 'heartbeat-path'
+      }));
+
+      // Windows — row 2
+      hospital.appendChild(svgEl('rect', {
+        x: '70', y: '160', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.7', class: 'bldg-window'
+      }));
+      hospital.appendChild(svgEl('rect', {
+        x: '98', y: '160', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.6', class: 'bldg-window'
+      }));
+      hospital.appendChild(svgEl('rect', {
+        x: '126', y: '160', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.8', class: 'bldg-window'
+      }));
+
+      // Door
+      hospital.appendChild(svgEl('rect', {
+        x: '95', y: '210', width: '20', height: '30', rx: '2', ry: '2',
+        fill: '#8B7355', stroke: '#6B5B43', 'stroke-width': '1', class: 'bldg-door'
+      }));
+      hospital.appendChild(svgEl('circle', {
+        cx: '112', cy: '227', r: '1.5', fill: '#D4B896'
+      }));
+
+      mainGroup.appendChild(hospital);
+      mainGroup.appendChild(svgEl('text', {
+        x: '105', y: '262', class: 'building-label'
+      }, [document.createTextNode('Health Check')]));
+
+      // ═══════════════════════════════════════════════════════
+      // BUILDING 2: City Hall (x=340) — Orchestrator
+      // ═══════════════════════════════════════════════════════
+      var cityHall = svgEl('g', {
+        id: 'bldg-city-hall',
+        'data-name': 'Orchestrator',
+        'data-analogy': 'City Hall coordinating all city services from one place',
+        'data-technical': 'Service orchestrator, API gateway, central coordinator managing request flow',
+        cursor: 'pointer'
+      });
+
+      // Main body
+      cityHall.appendChild(svgEl('rect', {
+        x: '295', y: '100', width: '100', height: '140', rx: '3', ry: '3',
+        fill: '#E8D5B7', stroke: '#C4A882', 'stroke-width': '2', class: 'bldg-body'
+      }));
+
+      // Slate gray dome
+      cityHall.appendChild(svgEl('ellipse', {
+        cx: '345', cy: '80', rx: '45', ry: '22',
+        fill: '#64748B', stroke: '#475569', 'stroke-width': '1.5'
+      }));
+      cityHall.appendChild(svgEl('circle', {
+        cx: '345', cy: '60', r: '4', fill: '#94A3B8'
+      }));
+      cityHall.appendChild(svgEl('line', {
+        x1: '345', y1: '64', x2: '345', y2: '80',
+        stroke: '#475569', 'stroke-width': '1'
+      }));
+
+      // Entablature
+      cityHall.appendChild(svgEl('rect', {
+        x: '290', y: '95', width: '110', height: '10', rx: '1', ry: '1',
+        fill: '#D6C9B3', stroke: '#C4A882', 'stroke-width': '1'
+      }));
+
+      // Columns (4 pillars)
+      var colXPositions = [305, 325, 355, 375];
+      colXPositions.forEach(function(cx) {
+        cityHall.appendChild(svgEl('rect', {
+          x: String(cx), y: '105', width: '8', height: '135',
+          fill: '#D6C9B3', stroke: '#C4A882', 'stroke-width': '0.5'
+        }));
+        cityHall.appendChild(svgEl('rect', {
+          x: String(cx - 2), y: '103', width: '12', height: '5', rx: '1',
+          fill: '#C4A882'
+        }));
+        cityHall.appendChild(svgEl('rect', {
+          x: String(cx - 2), y: '236', width: '12', height: '4', rx: '1',
+          fill: '#C4A882'
+        }));
+      });
+
+      // Windows behind columns
+      cityHall.appendChild(svgEl('rect', {
+        x: '310', y: '130', width: '12', height: '20', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.8', class: 'bldg-window'
+      }));
+      cityHall.appendChild(svgEl('rect', {
+        x: '338', y: '130', width: '14', height: '20', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.9', class: 'bldg-window'
+      }));
+      cityHall.appendChild(svgEl('rect', {
+        x: '366', y: '130', width: '12', height: '20', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.7', class: 'bldg-window'
+      }));
+
+      // Grand arched door
+      cityHall.appendChild(svgEl('rect', {
+        x: '332', y: '200', width: '26', height: '40', rx: '2', ry: '2',
+        fill: '#6B5B43', stroke: '#5A4B35', 'stroke-width': '1', class: 'bldg-door'
+      }));
+      cityHall.appendChild(svgEl('path', {
+        d: 'M 332 200 Q 345 185, 358 200',
+        fill: '#6B5B43', stroke: '#5A4B35', 'stroke-width': '1'
+      }));
+
+      mainGroup.appendChild(cityHall);
+      mainGroup.appendChild(svgEl('text', {
+        x: '345', y: '262', class: 'building-label'
+      }, [document.createTextNode('Orchestrator')]));
+
+      // ═══════════════════════════════════════════════════════
+      // BUILDING 3: University (x=540) — ML Training
+      // ═══════════════════════════════════════════════════════
+      var university = svgEl('g', {
+        id: 'bldg-university',
+        'data-name': 'ML Training',
+        'data-analogy': 'University where students learn for years before they are useful',
+        'data-technical': 'Model training \u2014 feeding data to neural networks. Expensive upfront, useful for years',
+        cursor: 'pointer'
+      });
+
+      // Main body
+      university.appendChild(svgEl('rect', {
+        x: '500', y: '80', width: '90', height: '160', rx: '3', ry: '3',
+        fill: '#E8D5B7', stroke: '#C4A882', 'stroke-width': '2', class: 'bldg-body'
+      }));
+
+      // Dark blue pitched roof
+      university.appendChild(svgEl('polygon', {
+        points: '495,80 545,45 595,80',
+        fill: '#1E3A5F', stroke: '#1D4ED8', 'stroke-width': '1.5'
+      }));
+
+      // Book icon on facade
+      university.appendChild(svgEl('path', {
+        d: 'M 530 105 L 530 120 Q 540 115, 545 120 L 545 105 Q 540 100, 530 105 Z',
+        fill: '#FBBF24', opacity: '0.8'
+      }));
+      university.appendChild(svgEl('path', {
+        d: 'M 545 105 L 545 120 Q 550 115, 560 120 L 560 105 Q 550 100, 545 105 Z',
+        fill: '#F59E0B', opacity: '0.8'
+      }));
+      university.appendChild(svgEl('line', {
+        x1: '545', y1: '103', x2: '545', y2: '120',
+        stroke: '#92400E', 'stroke-width': '1'
+      }));
+
+      // Windows — row 1
+      university.appendChild(svgEl('rect', {
+        x: '510', y: '135', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.9', class: 'bldg-window'
+      }));
+      university.appendChild(svgEl('rect', {
+        x: '538', y: '135', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.8', class: 'bldg-window'
+      }));
+      university.appendChild(svgEl('rect', {
+        x: '566', y: '135', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.7', class: 'bldg-window'
+      }));
+
+      // Windows — row 2
+      university.appendChild(svgEl('rect', {
+        x: '510', y: '168', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.7', class: 'bldg-window'
+      }));
+      university.appendChild(svgEl('rect', {
+        x: '538', y: '168', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.6', class: 'bldg-window'
+      }));
+      university.appendChild(svgEl('rect', {
+        x: '566', y: '168', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.8', class: 'bldg-window'
+      }));
+
+      // Door
+      university.appendChild(svgEl('rect', {
+        x: '530', y: '206', width: '22', height: '34', rx: '2', ry: '2',
+        fill: '#8B7355', stroke: '#6B5B43', 'stroke-width': '1', class: 'bldg-door'
+      }));
+      university.appendChild(svgEl('circle', {
+        cx: '548', cy: '225', r: '1.5', fill: '#D4B896'
+      }));
+
+      mainGroup.appendChild(university);
+      mainGroup.appendChild(svgEl('text', {
+        x: '545', y: '262', class: 'building-label'
+      }, [document.createTextNode('ML Training')]));
+
+      // ═══════════════════════════════════════════════════════
+      // BUILDING 4: Bank (x=740) — Payment Service
+      // ═══════════════════════════════════════════════════════
+      var bank = svgEl('g', {
+        id: 'bldg-bank',
+        'data-name': 'Payment Service',
+        'data-analogy': 'Bank processing financial transactions securely',
+        'data-technical': 'Payment processing (Stripe, Square). PCI compliance, transaction integrity',
+        cursor: 'pointer'
+      });
+
+      // Main body
+      bank.appendChild(svgEl('rect', {
+        x: '700', y: '100', width: '90', height: '140', rx: '3', ry: '3',
+        fill: '#E8D5B7', stroke: '#C4A882', 'stroke-width': '2', class: 'bldg-body'
+      }));
+
+      // Dark green triangular roof
+      bank.appendChild(svgEl('polygon', {
+        points: '695,100 745,65 795,100',
+        fill: '#15803D', stroke: '#166534', 'stroke-width': '1.5'
+      }));
+
+      // Dollar sign icon
+      bank.appendChild(svgEl('text', {
+        x: '745', y: '135', 'text-anchor': 'middle',
+        'font-family': 'serif', 'font-size': '22', 'font-weight': '700',
+        fill: '#15803D', opacity: '0.7'
+      }, [document.createTextNode('$')]));
+
+      // Pillars flanking door
+      var bankColX = [710, 770];
+      bankColX.forEach(function(bx) {
+        bank.appendChild(svgEl('rect', {
+          x: String(bx), y: '145', width: '6', height: '95',
+          fill: '#D6C9B3', stroke: '#C4A882', 'stroke-width': '0.5'
+        }));
+        bank.appendChild(svgEl('rect', {
+          x: String(bx - 1), y: '143', width: '8', height: '4', rx: '1',
+          fill: '#C4A882'
+        }));
+        bank.appendChild(svgEl('rect', {
+          x: String(bx - 1), y: '237', width: '8', height: '3', rx: '1',
+          fill: '#C4A882'
+        }));
+      });
+
+      // Windows
+      bank.appendChild(svgEl('rect', {
+        x: '722', y: '155', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.9', class: 'bldg-window'
+      }));
+      bank.appendChild(svgEl('rect', {
+        x: '752', y: '155', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.8', class: 'bldg-window'
+      }));
+      bank.appendChild(svgEl('rect', {
+        x: '722', y: '185', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.7', class: 'bldg-window'
+      }));
+      bank.appendChild(svgEl('rect', {
+        x: '752', y: '185', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.8', class: 'bldg-window'
+      }));
+
+      // Double door
+      bank.appendChild(svgEl('rect', {
+        x: '733', y: '212', width: '24', height: '28', rx: '2', ry: '2',
+        fill: '#6B5B43', stroke: '#5A4B35', 'stroke-width': '1', class: 'bldg-door'
+      }));
+      bank.appendChild(svgEl('line', {
+        x1: '745', y1: '214', x2: '745', y2: '240',
+        stroke: '#5A4B35', 'stroke-width': '0.5'
+      }));
+
+      mainGroup.appendChild(bank);
+      mainGroup.appendChild(svgEl('text', {
+        x: '745', y: '262', class: 'building-label'
+      }, [document.createTextNode('Payment')]));
+
+      // ═══════════════════════════════════════════════════════
+      // BUILDING 5: Shop (x=980) — Service Endpoint
+      // ═══════════════════════════════════════════════════════
+      var shop = svgEl('g', {
+        id: 'bldg-shop',
+        'data-name': 'Service Endpoint',
+        'data-analogy': 'Shop serving customers \u2014 the place users actually interact with',
+        'data-technical': 'Application service handling business logic, the main API your users call',
+        cursor: 'pointer'
+      });
+
+      // Main body
+      shop.appendChild(svgEl('rect', {
+        x: '940', y: '110', width: '90', height: '130', rx: '3', ry: '3',
+        fill: '#E8D5B7', stroke: '#C4A882', 'stroke-width': '2', class: 'bldg-body'
+      }));
+
+      // Warm orange awning
+      shop.appendChild(svgEl('path', {
+        d: 'M 935 110 L 1035 110 L 1040 130 L 930 130 Z',
+        fill: '#F97316', stroke: '#EA580C', 'stroke-width': '1.5'
+      }));
+      // Awning scalloped edge
+      var awningScallops = [935, 955, 975, 995, 1015];
+      awningScallops.forEach(function(sx, idx) {
+        if (idx < awningScallops.length - 1) {
+          shop.appendChild(svgEl('path', {
+            d: 'M ' + sx + ' 130 Q ' + (sx + 10) + ' 140, ' + awningScallops[idx + 1] + ' 130',
+            fill: '#EA580C', stroke: '#C2410C', 'stroke-width': '0.5'
+          }));
+        }
+      });
+
+      // Shop sign
+      shop.appendChild(svgEl('rect', {
+        x: '952', y: '135', width: '66', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', stroke: '#D4B896', 'stroke-width': '0.5'
+      }));
+      shop.appendChild(svgEl('text', {
+        x: '985', y: '148', 'text-anchor': 'middle',
+        'font-family': 'DM Sans, sans-serif', 'font-size': '9', 'font-weight': '600',
+        fill: '#92400E'
+      }, [document.createTextNode('API SHOP')]));
+
+      // Windows
+      shop.appendChild(svgEl('rect', {
+        x: '950', y: '162', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FEF3C7', opacity: '0.9', class: 'bldg-window'
+      }));
+      shop.appendChild(svgEl('rect', {
+        x: '1006', y: '162', width: '14', height: '18', rx: '2', ry: '2',
+        fill: '#FDE68A', opacity: '0.8', class: 'bldg-window'
+      }));
+
+      // Large display window
+      shop.appendChild(svgEl('rect', {
+        x: '970', y: '162', width: '30', height: '26', rx: '2', ry: '2',
+        fill: '#87CEEB', opacity: '0.4', stroke: '#C4A882', 'stroke-width': '0.5', class: 'bldg-window'
+      }));
+
+      // Door
+      shop.appendChild(svgEl('rect', {
+        x: '975', y: '210', width: '20', height: '30', rx: '2', ry: '2',
+        fill: '#8B7355', stroke: '#6B5B43', 'stroke-width': '1', class: 'bldg-door'
+      }));
+      shop.appendChild(svgEl('circle', {
+        cx: '991', cy: '227', r: '1.5', fill: '#D4B896'
+      }));
+
+      // Heat shimmer group (hidden by default, visible when overloaded)
+      var shimmerGroup = svgEl('g', { id: 'shop-heat-shimmer' });
+      shimmerGroup.appendChild(svgEl('path', {
+        d: 'M 945 100 Q 960 92, 975 100 Q 990 108, 1005 100',
+        class: 'heat-shimmer-line'
+      }));
+      shimmerGroup.appendChild(svgEl('path', {
+        d: 'M 950 90 Q 965 82, 980 90 Q 995 98, 1010 90',
+        class: 'heat-shimmer-line'
+      }));
+      shimmerGroup.appendChild(svgEl('path', {
+        d: 'M 955 80 Q 970 72, 985 80 Q 1000 88, 1015 80',
+        class: 'heat-shimmer-line'
+      }));
+      shop.appendChild(shimmerGroup);
+
+      mainGroup.appendChild(shop);
+      mainGroup.appendChild(svgEl('text', {
+        x: '985', y: '262', class: 'building-label'
+      }, [document.createTextNode('Service Endpoint')]));
+
+      svg.appendChild(mainGroup);
+      container.appendChild(svg);
+    }
+
     /* ───────────────────── Render City (visual state) ───────────────────── */
     function renderCity() {
       var t = state.toggles;
@@ -2074,10 +3015,74 @@
           roadMainGroup.classList.remove('road-rate-off');
         }
       }
+
+      // --- AI Workers toggle affects sky layer ---
+      var skyLayer = document.getElementById('sky-layer');
+      var aiWorkers = document.querySelectorAll('.ai-worker');
+      var failureSigns = document.querySelectorAll('.sky-failure-sign');
+
+      if (!t.aiWorkers) {
+        // Desaturate sky
+        if (skyLayer) skyLayer.classList.add('sky-desaturated');
+
+        // Hide workers
+        aiWorkers.forEach(function(worker) {
+          worker.classList.add('hidden');
+        });
+
+        // Show failure signs
+        failureSigns.forEach(function(sign) {
+          sign.classList.add('visible');
+        });
+      } else {
+        // Restore sky
+        if (skyLayer) skyLayer.classList.remove('sky-desaturated');
+
+        // Show workers
+        aiWorkers.forEach(function(worker) {
+          worker.classList.remove('hidden');
+        });
+
+        // Hide failure signs
+        failureSigns.forEach(function(sign) {
+          sign.classList.remove('visible');
+        });
+      }
+
+      // --- Load balancer toggle affects building layer ---
+      var shopBuilding = document.getElementById('bldg-shop');
+      var otherBuildings = [
+        document.getElementById('bldg-hospital'),
+        document.getElementById('bldg-city-hall'),
+        document.getElementById('bldg-university'),
+        document.getElementById('bldg-bank')
+      ];
+      var heatShimmer = document.getElementById('shop-heat-shimmer');
+
+      if (!t.loadBalancer) {
+        // Shop becomes overloaded
+        if (shopBuilding) shopBuilding.classList.add('building-overloaded');
+        if (heatShimmer) heatShimmer.classList.add('heat-shimmer-visible');
+
+        // Other buildings get dimmed
+        otherBuildings.forEach(function(bldg) {
+          if (bldg) bldg.classList.add('building-dimmed');
+        });
+      } else {
+        // Restore normal state
+        if (shopBuilding) shopBuilding.classList.remove('building-overloaded');
+        if (heatShimmer) heatShimmer.classList.remove('heat-shimmer-visible');
+
+        otherBuildings.forEach(function(bldg) {
+          if (bldg) bldg.classList.remove('building-dimmed');
+        });
+      }
     }
 
     /* ───────────────────── Init ───────────────────── */
     buildControlPanel();
+    buildSkyLayer();
+    buildBuildingLayer();
     buildRoadLayer();
     buildElectricityLayer();
     setupTooltips();
