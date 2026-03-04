@@ -489,6 +489,114 @@
       text-anchor: middle;
     }
 
+    /* ───────────────────── Electricity Layer SVG ───────────────────── */
+    #electricity-layer {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #electricity-layer svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Electricity wire flow animation (faster than water) */
+    @keyframes elec-flow {
+      from { stroke-dashoffset: 24; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Glow pulse animation */
+    @keyframes elec-glow-pulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.4; }
+    }
+
+    .elec-wire-glow {
+      stroke: var(--glow);
+      stroke-width: 10;
+      stroke-linecap: round;
+      fill: none;
+      opacity: 0.3;
+      animation: elec-glow-pulse 2s ease-in-out infinite;
+    }
+
+    .elec-wire {
+      stroke: var(--amber);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 8 4;
+      fill: none;
+      animation: elec-flow 1.5s linear infinite;
+    }
+
+    /* Circuit failure state — wires turn red */
+    .circuit-failure .elec-wire {
+      stroke: var(--failure-red);
+    }
+
+    .circuit-failure .elec-wire-glow {
+      stroke: var(--failure-red);
+    }
+
+    /* Circuit breaker lever transition */
+    .cb-lever {
+      transition: transform 0.5s ease;
+      transform-origin: 750px 100px;
+    }
+
+    .circuit-failure .cb-lever {
+      transform: rotate(-45deg);
+    }
+
+    /* Power plant shake animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      50% { transform: translateX(2px); }
+      75% { transform: translateX(-2px); }
+    }
+
+    .circuit-failure #elec-power-plant {
+      animation: shake 0.1s linear infinite;
+    }
+
+    /* Spark starburst animation */
+    @keyframes spark-burst {
+      0% { opacity: 1; transform: scale(0); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0; transform: scale(0); }
+    }
+
+    .elec-spark {
+      opacity: 0;
+    }
+
+    .circuit-failure .elec-spark {
+      animation: spark-burst 0.6s ease-in-out infinite;
+    }
+
+    .circuit-failure .elec-spark:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .circuit-failure .elec-spark:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .circuit-failure .elec-spark:nth-child(4) {
+      animation-delay: 0.45s;
+    }
+
+    /* Electricity labels */
+    .elec-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      fill: #FDE68A;
+      text-anchor: middle;
+    }
+
     /* ───────────────────── Tooltip ───────────────────── */
     #tooltip {
       display: none;
@@ -994,6 +1102,289 @@
       });
     }
 
+    /* ───────────────────── SVG Helper ───────────────────── */
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+
+    function svgEl(tag, attrs, children) {
+      var node = document.createElementNS(SVG_NS, tag);
+      if (attrs) {
+        Object.keys(attrs).forEach(function(k) {
+          node.setAttribute(k, attrs[k]);
+        });
+      }
+      if (children) {
+        children.forEach(function(child) {
+          if (child) node.appendChild(child);
+        });
+      }
+      return node;
+    }
+
+    /* ───────────────────── Build Electricity Layer ───────────────────── */
+    function buildElectricityLayer() {
+      var container = document.getElementById('electricity-layer');
+      var svg = svgEl('svg', {
+        viewBox: '0 0 1200 200',
+        width: '100%',
+        height: '100%',
+        preserveAspectRatio: 'xMidYMid meet',
+        xmlns: SVG_NS
+      });
+
+      // Main group for circuit-failure class toggling
+      var mainGroup = svgEl('g', { id: 'elec-main-group' });
+
+      // ─── Wire paths ───
+      // Path definitions: power plant → transformer → circuit breaker → ground
+      var wirePath1 = 'M 130 100 L 400 100';
+      var wirePath2 = 'M 500 100 L 700 100';
+      var wirePath3 = 'M 800 100 L 1000 100';
+
+      // Glow wires (behind)
+      mainGroup.appendChild(svgEl('path', { d: wirePath1, class: 'elec-wire-glow' }));
+      mainGroup.appendChild(svgEl('path', { d: wirePath2, class: 'elec-wire-glow' }));
+      mainGroup.appendChild(svgEl('path', { d: wirePath3, class: 'elec-wire-glow' }));
+
+      // Flowing wires (on top)
+      mainGroup.appendChild(svgEl('path', { d: wirePath1, class: 'elec-wire' }));
+      mainGroup.appendChild(svgEl('path', { d: wirePath2, class: 'elec-wire' }));
+      mainGroup.appendChild(svgEl('path', { d: wirePath3, class: 'elec-wire' }));
+
+      // ─── Power Plant (~x=80) ───
+      var powerPlant = svgEl('g', {
+        id: 'elec-power-plant',
+        'data-name': 'Server / CPU',
+        'data-analogy': 'Power plant generating electricity for the whole city',
+        'data-technical': 'The server or CPU that processes all computation requests',
+        cursor: 'pointer'
+      });
+
+      // Main building body
+      powerPlant.appendChild(svgEl('rect', {
+        x: '30', y: '60', width: '100', height: '80', rx: '4', ry: '4',
+        fill: '#92400E', stroke: '#FCD34D', 'stroke-width': '2'
+      }));
+
+      // Smokestack
+      powerPlant.appendChild(svgEl('rect', {
+        x: '50', y: '30', width: '20', height: '35', rx: '3', ry: '3',
+        fill: '#92400E', stroke: '#FCD34D', 'stroke-width': '1.5'
+      }));
+
+      // Smokestack top cap
+      powerPlant.appendChild(svgEl('rect', {
+        x: '45', y: '25', width: '30', height: '8', rx: '2', ry: '2',
+        fill: '#78350F', stroke: '#FCD34D', 'stroke-width': '1'
+      }));
+
+      // Smoke puffs
+      powerPlant.appendChild(svgEl('circle', {
+        cx: '60', cy: '18', r: '5', fill: '#9CA3AF', opacity: '0.5'
+      }));
+      powerPlant.appendChild(svgEl('circle', {
+        cx: '55', cy: '10', r: '4', fill: '#9CA3AF', opacity: '0.35'
+      }));
+
+      // Lightning bolt icon on building
+      powerPlant.appendChild(svgEl('polygon', {
+        points: '75,70 85,70 80,88 90,88 70,115 76,95 66,95',
+        fill: '#FCD34D', opacity: '0.9'
+      }));
+
+      // Windows
+      powerPlant.appendChild(svgEl('rect', {
+        x: '40', y: '75', width: '12', height: '10', rx: '1', ry: '1',
+        fill: '#FCD34D', opacity: '0.5'
+      }));
+      powerPlant.appendChild(svgEl('rect', {
+        x: '105', y: '75', width: '12', height: '10', rx: '1', ry: '1',
+        fill: '#FCD34D', opacity: '0.5'
+      }));
+      powerPlant.appendChild(svgEl('rect', {
+        x: '40', y: '110', width: '12', height: '16', rx: '1', ry: '1',
+        fill: '#FCD34D', opacity: '0.4'
+      }));
+      powerPlant.appendChild(svgEl('rect', {
+        x: '105', y: '110', width: '12', height: '16', rx: '1', ry: '1',
+        fill: '#FCD34D', opacity: '0.4'
+      }));
+
+      mainGroup.appendChild(powerPlant);
+
+      // Power plant label
+      mainGroup.appendChild(svgEl('text', {
+        x: '80', y: '158', class: 'elec-label'
+      }, [document.createTextNode('Server')]));
+
+      // ─── Transformer (~x=450) ───
+      var transformer = svgEl('g', {
+        id: 'elec-transformer',
+        'data-name': 'Data Transform',
+        'data-analogy': 'Transformer converting voltage \u2014 changes data from one format to another',
+        'data-technical': 'ETL, serialization, format conversion \u2014 reshaping data for the next stage',
+        cursor: 'pointer'
+      });
+
+      // Outer rectangle
+      transformer.appendChild(svgEl('rect', {
+        x: '400', y: '55', width: '100', height: '90', rx: '10', ry: '10',
+        fill: '#3D2B1A', stroke: '#FCD34D', 'stroke-width': '2.5'
+      }));
+
+      // Inner rectangle
+      transformer.appendChild(svgEl('rect', {
+        x: '415', y: '68', width: '70', height: '64', rx: '6', ry: '6',
+        fill: '#2E1F0F', stroke: '#F59E0B', 'stroke-width': '1.5'
+      }));
+
+      // Coil zigzag lines between inner and outer
+      transformer.appendChild(svgEl('path', {
+        d: 'M 420 78 Q 430 73, 440 78 Q 450 83, 460 78 Q 470 73, 480 78',
+        stroke: '#FCD34D', 'stroke-width': '1.5', fill: 'none', opacity: '0.7'
+      }));
+      transformer.appendChild(svgEl('path', {
+        d: 'M 420 90 Q 430 85, 440 90 Q 450 95, 460 90 Q 470 85, 480 90',
+        stroke: '#FCD34D', 'stroke-width': '1.5', fill: 'none', opacity: '0.7'
+      }));
+      transformer.appendChild(svgEl('path', {
+        d: 'M 420 102 Q 430 97, 440 102 Q 450 107, 460 102 Q 470 97, 480 102',
+        stroke: '#FCD34D', 'stroke-width': '1.5', fill: 'none', opacity: '0.7'
+      }));
+      transformer.appendChild(svgEl('path', {
+        d: 'M 420 114 Q 430 109, 440 114 Q 450 119, 460 114 Q 470 109, 480 114',
+        stroke: '#FCD34D', 'stroke-width': '1.5', fill: 'none', opacity: '0.7'
+      }));
+
+      // Input/output arrow indicators
+      transformer.appendChild(svgEl('polygon', {
+        points: '402,96 408,100 402,104',
+        fill: '#FCD34D', opacity: '0.8'
+      }));
+      transformer.appendChild(svgEl('polygon', {
+        points: '498,96 492,100 498,104',
+        fill: '#FCD34D', opacity: '0.8'
+      }));
+
+      mainGroup.appendChild(transformer);
+
+      // Transformer label
+      mainGroup.appendChild(svgEl('text', {
+        x: '450', y: '165', class: 'elec-label'
+      }, [document.createTextNode('Transform')]));
+
+      // ─── Circuit Breaker (~x=750) ───
+      var circuitBreaker = svgEl('g', {
+        id: 'elec-circuit-breaker',
+        'data-name': 'Circuit Breaker',
+        'data-analogy': 'Electrical breaker that trips before the house burns down',
+        'data-technical': 'Stops calling a failing service to prevent cascade failures. Three states: closed, open, half-open',
+        cursor: 'pointer'
+      });
+
+      // Breaker housing
+      circuitBreaker.appendChild(svgEl('rect', {
+        x: '710', y: '60', width: '80', height: '80', rx: '6', ry: '6',
+        fill: '#3D2B1A', stroke: '#FCD34D', 'stroke-width': '2'
+      }));
+
+      // Inner panel
+      circuitBreaker.appendChild(svgEl('rect', {
+        x: '720', y: '70', width: '60', height: '60', rx: '4', ry: '4',
+        fill: '#2E1F0F', stroke: '#F59E0B', 'stroke-width': '1'
+      }));
+
+      // Status indicator (green dot when closed)
+      circuitBreaker.appendChild(svgEl('circle', {
+        cx: '765', cy: '78', r: '4', fill: '#22C55E', id: 'cb-status-dot'
+      }));
+
+      // Lever pivot point
+      circuitBreaker.appendChild(svgEl('circle', {
+        cx: '750', cy: '100', r: '5', fill: '#FCD34D', stroke: '#92400E', 'stroke-width': '1.5'
+      }));
+
+      // Lever arm (rotates on failure)
+      var leverGroup = svgEl('g', { class: 'cb-lever' });
+      leverGroup.appendChild(svgEl('rect', {
+        x: '748', y: '82', width: '4', height: '22', rx: '2', ry: '2',
+        fill: '#FCD34D'
+      }));
+      leverGroup.appendChild(svgEl('circle', {
+        cx: '750', cy: '80', r: '4', fill: '#F59E0B'
+      }));
+      circuitBreaker.appendChild(leverGroup);
+
+      // Contact points (top and bottom)
+      circuitBreaker.appendChild(svgEl('rect', {
+        x: '730', y: '108', width: '40', height: '6', rx: '2', ry: '2',
+        fill: '#92400E', stroke: '#FCD34D', 'stroke-width': '1'
+      }));
+      circuitBreaker.appendChild(svgEl('rect', {
+        x: '730', y: '118', width: '40', height: '6', rx: '2', ry: '2',
+        fill: '#92400E', stroke: '#FCD34D', 'stroke-width': '1'
+      }));
+
+      // Spark elements (hidden by default, appear on failure)
+      circuitBreaker.appendChild(svgEl('circle', {
+        cx: '770', cy: '85', r: '3', fill: '#FCD34D', class: 'elec-spark'
+      }));
+      circuitBreaker.appendChild(svgEl('circle', {
+        cx: '735', cy: '90', r: '2.5', fill: '#F59E0B', class: 'elec-spark'
+      }));
+      circuitBreaker.appendChild(svgEl('circle', {
+        cx: '760', cy: '75', r: '2', fill: '#FDE68A', class: 'elec-spark'
+      }));
+      circuitBreaker.appendChild(svgEl('circle', {
+        cx: '745', cy: '80', r: '2.5', fill: '#FCD34D', class: 'elec-spark'
+      }));
+
+      mainGroup.appendChild(circuitBreaker);
+
+      // Circuit Breaker label
+      mainGroup.appendChild(svgEl('text', {
+        x: '750', y: '165', class: 'elec-label'
+      }, [document.createTextNode('Breaker')]));
+
+      // ─── Ground Symbol (~x=1050) ───
+      var ground = svgEl('g', {
+        id: 'elec-ground',
+        'data-name': 'Fallback / Error Handling',
+        'data-analogy': 'Electrical grounding \u2014 safe path for excess current',
+        'data-technical': 'Error handling, fallback responses, graceful degradation when things go wrong',
+        cursor: 'pointer'
+      });
+
+      // Vertical line down to ground bars
+      ground.appendChild(svgEl('line', {
+        x1: '1050', y1: '92', x2: '1050', y2: '110',
+        stroke: '#FCD34D', 'stroke-width': '4', 'stroke-linecap': 'round'
+      }));
+
+      // Three horizontal lines (progressively shorter)
+      ground.appendChild(svgEl('line', {
+        x1: '1020', y1: '110', x2: '1080', y2: '110',
+        stroke: '#FCD34D', 'stroke-width': '4', 'stroke-linecap': 'round'
+      }));
+      ground.appendChild(svgEl('line', {
+        x1: '1030', y1: '122', x2: '1070', y2: '122',
+        stroke: '#FCD34D', 'stroke-width': '3', 'stroke-linecap': 'round'
+      }));
+      ground.appendChild(svgEl('line', {
+        x1: '1038', y1: '132', x2: '1062', y2: '132',
+        stroke: '#FCD34D', 'stroke-width': '2.5', 'stroke-linecap': 'round'
+      }));
+
+      mainGroup.appendChild(ground);
+
+      // Ground label
+      mainGroup.appendChild(svgEl('text', {
+        x: '1050', y: '158', class: 'elec-label'
+      }, [document.createTextNode('Fallback')]));
+
+      svg.appendChild(mainGroup);
+      container.appendChild(svg);
+    }
+
     /* ───────────────────── Render City (visual state) ───────────────────── */
     function renderCity() {
       var t = state.toggles;
@@ -1007,48 +1398,51 @@
       var tankWater = document.querySelector('.tank-water-fill');
 
       if (!t.validation) {
-        // Water turns murky green
         flowOverlays.forEach(function(overlay) {
           overlay.classList.add('murky');
         });
         pipes.forEach(function(pipe) {
           pipe.classList.add('murky');
         });
-
-        // Filter mesh fades out
         filterMeshLines.forEach(function(line) {
           line.classList.add('hidden');
         });
-
-        // SQL injection warning appears
         if (sqlWarning) sqlWarning.classList.add('visible');
-
-        // Tank crack appears
         if (tankCrack) tankCrack.classList.add('visible');
-
-        // Tank water turns murky
         if (tankWater) tankWater.classList.add('murky');
       } else {
-        // Restore healthy state
         flowOverlays.forEach(function(overlay) {
           overlay.classList.remove('murky');
         });
         pipes.forEach(function(pipe) {
           pipe.classList.remove('murky');
         });
-
         filterMeshLines.forEach(function(line) {
           line.classList.remove('hidden');
         });
-
         if (sqlWarning) sqlWarning.classList.remove('visible');
         if (tankCrack) tankCrack.classList.remove('visible');
         if (tankWater) tankWater.classList.remove('murky');
+      }
+
+      // --- Circuit breaker toggle affects electricity layer ---
+      var elecMainGroup = document.getElementById('elec-main-group');
+      var cbStatusDot = document.getElementById('cb-status-dot');
+
+      if (elecMainGroup) {
+        if (!t.circuitBreaker) {
+          elecMainGroup.classList.add('circuit-failure');
+          if (cbStatusDot) cbStatusDot.setAttribute('fill', '#EF4444');
+        } else {
+          elecMainGroup.classList.remove('circuit-failure');
+          if (cbStatusDot) cbStatusDot.setAttribute('fill', '#22C55E');
+        }
       }
     }
 
     /* ───────────────────── Init ───────────────────── */
     buildControlPanel();
+    buildElectricityLayer();
     setupTooltips();
     renderCity();
   </script>
