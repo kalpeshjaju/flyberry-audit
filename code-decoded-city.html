@@ -1009,6 +1009,87 @@
       color: var(--text-muted);
       line-height: 1.4;
     }
+
+    /* ───────────────────── Simulation Engine ───────────────────── */
+    .sim-highlight {
+      filter: brightness(1.5) drop-shadow(0 0 8px currentColor);
+      transition: filter 0.3s;
+    }
+
+    .request-dot {
+      position: fixed;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 12px 4px rgba(255,255,255,0.8), 0 0 24px 8px rgba(96,165,250,0.5);
+      pointer-events: none;
+      z-index: 1000;
+      transition: left 0.6s ease-in-out, top 0.6s ease-in-out;
+    }
+
+    .request-dot.failure {
+      background: #EF4444;
+      box-shadow: 0 0 12px 4px rgba(239,68,73,0.8), 0 0 24px 8px rgba(239,68,73,0.5);
+    }
+
+    .request-dot.success {
+      background: #22C55E;
+      box-shadow: 0 0 12px 4px rgba(34,197,94,0.8), 0 0 24px 8px rgba(34,197,94,0.5);
+      transition: left 0.6s ease-in-out, top 0.6s ease-in-out, transform 0.5s ease-out, opacity 0.5s ease-out;
+    }
+
+    .request-dot.success.ripple {
+      transform: scale(3);
+      opacity: 0;
+    }
+
+    .step-label {
+      position: fixed;
+      background: #1E293B;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-family: var(--font-body);
+      pointer-events: none;
+      z-index: 1001;
+      white-space: nowrap;
+      border: 1px solid #30363d;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .step-label.visible {
+      opacity: 1;
+    }
+
+    .step-label.failure {
+      background: #7F1D1D;
+      border-color: #EF4444;
+      color: #FCA5A5;
+    }
+
+    .send-request-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    }
+
+    .send-request-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    }
+
+    @keyframes pulse-failure {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.4); }
+    }
+
+    .request-dot.failure-pulse {
+      animation: pulse-failure 0.25s ease-in-out 2;
+    }
   </style>
 </head>
 <body>
@@ -1346,10 +1427,313 @@
       });
     }
 
-    function sendRequest() {
-      // Placeholder — will be wired in Task 7
+    /* ───────────────────── Simulation Scenarios ───────────────────── */
+    var SCENARIOS = {
+      'buy-now': {
+        label: 'Buy Now',
+        steps: [
+          { layer: 'road', element: 'road-highway', label: 'Enter network' },
+          { layer: 'road', element: 'road-toll-booth', label: 'Auth check', toggle: 'auth' },
+          { layer: 'road', element: 'road-intersection', label: 'Route to shop' },
+          { layer: 'building', element: 'bldg-shop', label: 'Check inventory' },
+          { layer: 'water', element: 'water-tank', label: 'Query database' },
+          { layer: 'electricity', element: 'elec-transformer', label: 'Calculate price' },
+          { layer: 'building', element: 'bldg-bank', label: 'Process payment' },
+          { layer: 'sky', element: 'ai-worker-rag', label: 'AI fraud check', toggle: 'aiWorkers' }
+        ]
+      },
+      'search': {
+        label: 'Search',
+        steps: [
+          { layer: 'road', element: 'road-highway', label: 'Enter network' },
+          { layer: 'road', element: 'road-toll-booth', label: 'Quick auth', toggle: 'auth' },
+          { layer: 'road', element: 'road-traffic-light', label: 'Rate limit check', toggle: 'rateLimiter' },
+          { layer: 'water', element: 'water-cache', label: 'Check cache', toggle: 'cache' },
+          { layer: 'water', element: 'water-tank', label: 'Query database' },
+          { layer: 'building', element: 'bldg-city-hall', label: 'Load balance compute', toggle: 'loadBalancer' }
+        ]
+      },
+      'upload-photo': {
+        label: 'Upload Photo',
+        steps: [
+          { layer: 'road', element: 'road-highway', label: 'Enter network (large payload)' },
+          { layer: 'water', element: 'water-filter', label: 'Validate file', toggle: 'validation' },
+          { layer: 'water', element: 'water-tank', label: 'Store in database' },
+          { layer: 'electricity', element: 'elec-transformer', label: 'Resize & compress' },
+          { layer: 'road', element: 'road-one-way', label: 'CDN distribution' },
+          { layer: 'sky', element: 'ai-worker-inference', label: 'Generate alt-text', toggle: 'aiWorkers' },
+          { layer: 'water', element: 'water-faucet', label: 'Return thumbnail URL' }
+        ]
+      },
+      'send-message': {
+        label: 'Send Message',
+        steps: [
+          { layer: 'road', element: 'road-highway', label: 'WebSocket connection' },
+          { layer: 'road', element: 'road-one-way', label: 'Enter message queue' },
+          { layer: 'sky', element: 'ai-worker-agent', label: 'Content moderation', toggle: 'aiWorkers' },
+          { layer: 'water', element: 'water-tank', label: 'Store message' },
+          { layer: 'water', element: 'water-faucet', label: 'Deliver to recipient' }
+        ]
+      }
+    };
+
+    /* ───────────────────── Simulation Helpers ───────────────────── */
+    var stepLabelEl = null;
+
+    function delay(ms) {
+      return new Promise(function(resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function getSpeedMultiplier() {
+      if (state.speed === 1) return 1;
+      if (state.speed === 2) return 2;
+      if (state.speed === 5) return 5;
+      return 1;
+    }
+
+    function waitForClick() {
+      return new Promise(function(resolve) {
+        function handler() {
+          document.removeEventListener('click', handler);
+          resolve();
+        }
+        // Delay listener attachment to avoid catching the current click
+        setTimeout(function() {
+          document.addEventListener('click', handler);
+        }, 50);
+      });
+    }
+
+    function createRequestDot() {
+      var dot = document.createElement('div');
+      dot.className = 'request-dot';
+      dot.style.left = '-20px';
+      dot.style.top = '50%';
+      document.body.appendChild(dot);
+      return dot;
+    }
+
+    function removeRequestDot(dot) {
+      if (dot && dot.parentNode) {
+        dot.parentNode.removeChild(dot);
+      }
+    }
+
+    function animateDotTo(dot, x, y) {
+      return new Promise(function(resolve) {
+        var currentLeft = parseFloat(dot.style.left) || 0;
+        var currentTop = parseFloat(dot.style.top) || 0;
+        var dx = x - currentLeft;
+        var dy = y - currentTop;
+        var distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Duration based on distance, speed-adjusted, clamped between 200ms and 800ms
+        var baseDuration = Math.min(800, Math.max(200, distance * 1.5));
+        var duration = baseDuration / getSpeedMultiplier();
+
+        dot.style.transition = 'left ' + duration + 'ms ease-in-out, top ' + duration + 'ms ease-in-out';
+        dot.style.left = (x - 8) + 'px';
+        dot.style.top = (y - 8) + 'px';
+
+        setTimeout(resolve, duration + 50);
+      });
+    }
+
+    function showStepLabel(text, x, y) {
+      if (!stepLabelEl) {
+        stepLabelEl = document.createElement('div');
+        stepLabelEl.className = 'step-label';
+        document.body.appendChild(stepLabelEl);
+      }
+
+      // Clear previous failure styling
+      stepLabelEl.classList.remove('failure');
+
+      stepLabelEl.textContent = text;
+
+      // Check if text indicates a failure
+      if (text.indexOf('FAILED') === 0) {
+        stepLabelEl.classList.add('failure');
+      }
+
+      // Position above the dot
+      stepLabelEl.style.left = x + 'px';
+      stepLabelEl.style.top = (y - 36) + 'px';
+      stepLabelEl.style.transform = 'translateX(-50%)';
+      stepLabelEl.classList.add('visible');
+    }
+
+    function hideStepLabel() {
+      if (stepLabelEl) {
+        stepLabelEl.classList.remove('visible');
+      }
+    }
+
+    function playFailureFlash(dot, element) {
+      return new Promise(function(resolve) {
+        dot.classList.add('failure');
+        dot.classList.add('failure-pulse');
+
+        // Flash the element red briefly
+        var origFilter = element.style.filter;
+        element.style.filter = 'brightness(0.5) drop-shadow(0 0 12px #EF4444)';
+        element.style.transition = 'filter 0.15s';
+
+        setTimeout(function() {
+          element.style.filter = origFilter || '';
+          dot.classList.remove('failure-pulse');
+          resolve();
+        }, 500);
+      });
+    }
+
+    function playSuccessFlash(dot) {
+      return new Promise(function(resolve) {
+        dot.classList.add('success');
+
+        setTimeout(function() {
+          dot.classList.add('ripple');
+          setTimeout(resolve, 500);
+        }, 300);
+      });
+    }
+
+    function cleanupHighlights() {
+      var highlighted = document.querySelectorAll('.sim-highlight');
+      highlighted.forEach(function(el) {
+        el.classList.remove('sim-highlight');
+      });
+    }
+
+    function updateSendButton() {
+      var btn = document.querySelector('.send-request-btn');
+      if (!btn) return;
+
+      if (state.requestInFlight) {
+        btn.disabled = true;
+        // Clear button content and set new text
+        while (btn.firstChild) {
+          btn.removeChild(btn.firstChild);
+        }
+        btn.appendChild(document.createTextNode('Sending...'));
+      } else {
+        btn.disabled = false;
+        while (btn.firstChild) {
+          btn.removeChild(btn.firstChild);
+        }
+        var playSpan = document.createElement('span');
+        playSpan.className = 'play-icon';
+        playSpan.textContent = '\u25B6';
+        btn.appendChild(playSpan);
+        btn.appendChild(document.createTextNode('SEND REQUEST'));
+      }
+    }
+
+    /* ───────────────────── Simulation Runner ───────────────────── */
+    function runSimulation() {
+      if (state.requestInFlight) return;
       state.requestInFlight = true;
-      state.requestPosition = 0;
+      updateSendButton();
+
+      var scenario = SCENARIOS[state.scenario];
+      if (!scenario) {
+        state.requestInFlight = false;
+        updateSendButton();
+        return;
+      }
+
+      var dot = createRequestDot();
+      var stepIndex = 0;
+
+      function processStep() {
+        if (stepIndex >= scenario.steps.length) {
+          // All steps succeeded
+          playSuccessFlash(dot).then(function() {
+            removeRequestDot(dot);
+            cleanupHighlights();
+            hideStepLabel();
+            state.requestInFlight = false;
+            updateSendButton();
+          });
+          return;
+        }
+
+        var step = scenario.steps[stepIndex];
+        var targetEl = document.getElementById(step.element);
+
+        if (!targetEl) {
+          stepIndex++;
+          processStep();
+          return;
+        }
+
+        // Get target position (center of element)
+        var rect = targetEl.getBoundingClientRect();
+        var targetX = rect.left + rect.width / 2;
+        var targetY = rect.top + rect.height / 2;
+
+        // Update dot glow color based on layer
+        updateDotGlow(dot, step.layer);
+
+        // Animate dot to target
+        animateDotTo(dot, targetX, targetY).then(function() {
+          // Highlight element
+          targetEl.classList.add('sim-highlight');
+          showStepLabel(step.label, targetX, targetY);
+
+          // Check for failure
+          if (step.toggle && !state.toggles[step.toggle]) {
+            playFailureFlash(dot, targetEl).then(function() {
+              showStepLabel('FAILED: ' + step.label, targetX, targetY);
+              return delay(1500 / getSpeedMultiplier());
+            }).then(function() {
+              hideStepLabel();
+              removeRequestDot(dot);
+              cleanupHighlights();
+              state.requestInFlight = false;
+              updateSendButton();
+            });
+            return;
+          }
+
+          // Wait based on speed
+          if (state.speed === 'step') {
+            waitForClick().then(function() {
+              targetEl.classList.remove('sim-highlight');
+              hideStepLabel();
+              stepIndex++;
+              processStep();
+            });
+          } else {
+            delay(800 / getSpeedMultiplier()).then(function() {
+              targetEl.classList.remove('sim-highlight');
+              hideStepLabel();
+              stepIndex++;
+              processStep();
+            });
+          }
+        });
+      }
+
+      processStep();
+    }
+
+    function updateDotGlow(dot, layer) {
+      var colors = {
+        road: 'rgba(107,114,128,0.5)',
+        building: 'rgba(232,213,183,0.5)',
+        water: 'rgba(59,130,246,0.5)',
+        electricity: 'rgba(252,211,77,0.5)',
+        sky: 'rgba(255,215,0,0.5)'
+      };
+      var color = colors[layer] || 'rgba(96,165,250,0.5)';
+      dot.style.boxShadow = '0 0 12px 4px rgba(255,255,255,0.8), 0 0 24px 8px ' + color;
+    }
+
+    function sendRequest() {
+      runSimulation();
     }
 
     /* ───────────────────── Stats Logic ───────────────────── */
